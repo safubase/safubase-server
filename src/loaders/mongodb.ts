@@ -28,20 +28,15 @@ async function create_collection(schema: any, client: MongoClient, options: any)
     return null;
   }
 
-  const $jsonSchema: any = {
-    bsonType: schema.bsonType,
-    properties: schema.properties,
-  };
-
-  if (schema.required.length) {
-    $jsonSchema.required = schema.required;
-  }
-
   // Where magic happens.
   // Creation of schemas and configurations in database. returns a collection
   const result: Collection = await db.createCollection(schema.name, {
     validator: {
-      $jsonSchema,
+      $jsonSchema: {
+        bsonType: schema.bsonType,
+        properties: schema.properties,
+        required: schema.required,
+      },
     },
   });
 
@@ -49,7 +44,7 @@ async function create_collection(schema: any, client: MongoClient, options: any)
   const cc: Collection = db.collection(schema.name);
 
   switch (schema.name) {
-    case config.env.DB_COLLECTION_NAMES.premiums:
+    case 'premiums':
       await cc.createIndex({ expire_at: 1 }, { expireAfterSeconds: 0 });
       break;
   }
@@ -75,13 +70,12 @@ async function create_collection(schema: any, client: MongoClient, options: any)
 async function load_mongodb(cs: string, options: any): Promise<MongoClient> {
   // Create a new MongoClient
   const client: MongoClient = new MongoClient(cs);
-  const schemas = Object.values(models);
 
   await client.connect();
 
   const promises: Promise<Collection | null>[] = [];
 
-  for (const schema of schemas) {
+  for (const schema of Object.values(models)) {
     const ccp: Promise<Collection | null> = create_collection(schema, client, options);
     promises.push(ccp);
   }

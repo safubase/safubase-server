@@ -4,9 +4,9 @@
 import config from '../config';
 
 const schema = {
-  name: config.env.DB_COLLECTION_NAMES.users,
+  name: 'users',
   bsonType: config.types.object,
-  required: [],
+  required: ['username', 'email'],
   unique_props: ['username', 'email'],
   properties: {
     username: {

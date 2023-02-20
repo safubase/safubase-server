@@ -10,10 +10,6 @@ export default interface IConfig {
     readonly SESSION_NAME: string;
     readonly DB_CONN_STR: string;
     readonly DB_NAME: string;
-    readonly DB_COLLECTION_NAMES: {
-      readonly users: string;
-      readonly premiums: string;
-    };
     readonly EMAIL_HOST: string;
     readonly EMAIL_NO_REPLY_USERNAME: string;
     readonly EMAIL_NO_REPLY_PASSWORD: string;

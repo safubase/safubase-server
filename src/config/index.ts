@@ -24,10 +24,6 @@ const config: IConfig = {
     SESSION_NAME: process.env.SESSION_NAME || '',
     DB_CONN_STR: process.env.DB_CONN_STR || '',
     DB_NAME: process.env.DB_NAME || '',
-    DB_COLLECTION_NAMES: {
-      users: 'users',
-      premiums: 'premiums',
-    },
     EMAIL_HOST: process.env.EMAIL_HOST || '',
     EMAIL_NO_REPLY_USERNAME: process.env.EMAIL_NO_REPLY_USERNAME || '',
     EMAIL_NO_REPLY_PASSWORD: process.env.EMAIL_NO_REPLY_PASSWORD || '',
