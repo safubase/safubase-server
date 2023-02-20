@@ -14,8 +14,6 @@ import models from '../models';
 async function create_collection(schema: any, client: MongoClient, options: any): Promise<Collection | null> {
   const db: Db = client.db(config.env.DB_NAME);
 
-  console.log(schema.name, schema.required);
-
   // Listing all the collections in the database and convert them to array
   // to check if there is any conflict on collection names.
   const collections: CollectionInfo[] = await db.listCollections({}).toArray();
@@ -30,15 +28,20 @@ async function create_collection(schema: any, client: MongoClient, options: any)
     return null;
   }
 
+  const $jsonSchema: any = {
+    bsonType: schema.bsonType,
+    properties: schema.properties,
+  };
+
+  if (schema.required.length) {
+    $jsonSchema.required = schema.required;
+  }
+
   // Where magic happens.
   // Creation of schemas and configurations in database. returns a collection
   const result: Collection = await db.createCollection(schema.name, {
     validator: {
-      $jsonSchema: {
-        bsonType: schema.bsonType,
-        properties: schema.properties,
-        required: schema.required,
-      },
+      $jsonSchema,
     },
   });
 

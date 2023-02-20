@@ -17,9 +17,9 @@ import load_redis from './redis';
 async function load_server(): Promise<FastifyInstance> {
   // Dependency injections, you will carry that object throughout the whole program
   const options: IOptions = {
-    db: null,
-    collections: null,
-    redis: null,
+    db: {},
+    collections: {},
+    redis: {},
   };
 
   const cs: string = config.env.DB_CONN_STR;
