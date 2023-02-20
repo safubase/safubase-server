@@ -28,15 +28,20 @@ async function create_collection(schema: any, client: MongoClient, options: any)
     return null;
   }
 
+  const $jsonSchema: any = {
+    bsonType: schema.bsonType,
+    properties: schema.properties,
+  };
+
+  if (schema.required.length) {
+    $jsonSchema.required = schema.required;
+  }
+
   // Where magic happens.
   // Creation of schemas and configurations in database. returns a collection
   const result: Collection = await db.createCollection(schema.name, {
     validator: {
-      $jsonSchema: {
-        bsonType: schema.bsonType,
-        required: schema.required.length ? schema.required : undefined,
-        properties: schema.properties,
-      },
+      $jsonSchema,
     },
   });
 
