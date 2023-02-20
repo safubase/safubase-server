@@ -34,7 +34,11 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
   // fastify middleware plugin registrations
   await server.register(fastifyHelmet);
   await server.register(fastifyCookie, cookieOptions);
-  await server.register(fastifyCors, corsOptions);
+
+  if (config.env.NODE_ENV === 'production') {
+    await server.register(fastifyCors, corsOptions);
+  }
+
   await server.register(fastifyRateLimit, { max: 200, global: false, timeWindow: '1 minute' });
 
   bind_routes(server, options);
