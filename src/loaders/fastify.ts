@@ -2,10 +2,10 @@
 
 // MODULES
 import Fastify, { FastifyInstance } from 'fastify';
-import fastifyCookie, { FastifyCookieOptions } from '@fastify/cookie';
-import fastifyCors, { FastifyCorsOptions } from '@fastify/cors';
-import fastifyHelmet from '@fastify/helmet';
-import fastifyRateLimit from '@fastify/rate-limit';
+import fastify_cookie from '@fastify/cookie';
+import fastify_cors from '@fastify/cors';
+import fastify_helmet from '@fastify/helmet';
+import fastify_rate_limit from '@fastify/rate-limit';
 
 // API
 import bind_routes from '../api';
@@ -21,25 +21,23 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
     bodyLimit: 2097152, // no data more than 2mb is allowed in one req
   });
 
-  const cookieOptions: FastifyCookieOptions = {
-    secret: config.env.SESSION_SECRET,
-    parseOptions: {},
-  };
-
-  const corsOptions: FastifyCorsOptions = {
-    origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI],
-    credentials: true,
-  };
-
   // fastify middleware plugin registrations
-  await server.register(fastifyHelmet);
-  await server.register(fastifyCookie, cookieOptions);
 
   if (config.env.NODE_ENV === 'production') {
-    await server.register(fastifyCors, corsOptions);
+    await server.register(fastify_cors, {
+      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI],
+      credentials: true,
+    });
   }
 
-  await server.register(fastifyRateLimit, { max: 200, global: false, timeWindow: '1 minute' });
+  await server.register(fastify_helmet);
+
+  await server.register(fastify_cookie, {
+    secret: config.env.SESSION_SECRET,
+    parseOptions: {},
+  });
+
+  await server.register(fastify_rate_limit, { max: 200, global: false, timeWindow: '1 minute' });
 
   bind_routes(server, options);
 

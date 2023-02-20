@@ -38,9 +38,7 @@ class MailService {
 
     this.transporter.verify(function (err: any, success: any) {
       if (err) {
-        //throw err;
-        console.log(err);
-        return;
+        throw err;
       }
     });
   }
