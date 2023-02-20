@@ -34,7 +34,7 @@ async function create_collection(schema: any, client: MongoClient, options: any)
     validator: {
       $jsonSchema: {
         bsonType: schema.bsonType,
-        required: schema.required,
+        required: schema.required.length ? schema.required : undefined,
         properties: schema.properties,
       },
     },
