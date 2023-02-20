@@ -14,6 +14,8 @@ import models from '../models';
 async function create_collection(schema: any, client: MongoClient, options: any): Promise<Collection | null> {
   const db: Db = client.db(config.env.DB_NAME);
 
+  console.log(schema.name, schema.required);
+
   // Listing all the collections in the database and convert them to array
   // to check if there is any conflict on collection names.
   const collections: CollectionInfo[] = await db.listCollections({}).toArray();
