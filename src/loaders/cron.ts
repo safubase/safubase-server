@@ -22,15 +22,6 @@ async function load_cron(options: any): Promise<void> {
     urlEndpoint: `https://ik.imagekit.io/${config.env.IMAGEKIT_ID}/`,
   });
 
-  axios
-    .get('https://dexcheck.io/eth-api/whale_watcher?amount_min=10000&chain=bsc&exclude_stable=true&size=20&exclude_bots=0&page=1')
-    .then((res) => {
-      console.log(res.data.trs);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-
   // Every midnight
   new CronJob('00 00 00 * * *', function () {
     clear_sessions(options);
