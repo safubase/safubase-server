@@ -25,7 +25,7 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
 
   if (config.env.NODE_ENV === 'production') {
     await server.register(fastify_cors, {
-      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI],
+      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, 'http://localhost:3000'],
       credentials: true,
     });
   }
