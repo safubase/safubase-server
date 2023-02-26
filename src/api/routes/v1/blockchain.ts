@@ -18,12 +18,19 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
   // @ Route Options Area
   const routes: IRoutes = {
     get_whales: {
-      method: 'POST',
+      method: 'GET',
       url: '/v1' + config.endpoints.whales,
+      schema: {
+        querystring: {
+          chain: { type: 'string' },
+        },
+      },
       preValidation: mw.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
+        console.log(request.query);
+
         const credentials = {
-          ...request.body,
+          chain: request.query.chain,
         };
 
         try {

@@ -30,6 +30,13 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
     });
   }
 
+  if (config.env.NODE_ENV === 'development') {
+    await server.register(fastify_cors, {
+      origin: '*',
+      credentials: true,
+    });
+  }
+
   await server.register(fastify_helmet);
 
   await server.register(fastify_cookie, {
