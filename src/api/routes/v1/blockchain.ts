@@ -27,8 +27,6 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
       },
       preValidation: mw.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
-        console.log(request.query.chain);
-
         const credentials = {
           chain: request.query.chain,
         };

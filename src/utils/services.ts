@@ -29,8 +29,6 @@ export class AuthValidator {
   }
 
   async edit_profile(credentials: any): Promise<void> {
-    const times = config.times;
-    const types = config.types;
     const err = { section: 'auth', type: 'edit-profile' };
 
     if (!credentials) {
@@ -44,7 +42,7 @@ export class AuthValidator {
       throw { message: "Username hasn't been provided", type: `${err.section}:${err.type}` };
     }
 
-    if (typeof username !== types.string || typeof img_base64 !== types.string) {
+    if (typeof username !== config.types.string || typeof img_base64 !== config.types.string) {
       throw { message: 'Credentials are in invalid type', type: `${err.section}:${err.type}` };
     }
 
@@ -71,7 +69,7 @@ export class AuthValidator {
         throw { message: 'This username is taken', type: `${err.section}:${err.type}` };
       }
 
-      if (user.username_changed_at && Date.now() - user.username_changed_at.valueOf() < times.one_day_ms * 30) {
+      if (user.username_changed_at && Date.now() - user.username_changed_at.valueOf() < config.times.one_day_ms * 30) {
         throw { message: 'You can only change your username in every 30 days', type: `${err.section}:${err.type}` };
       }
     }
@@ -664,6 +662,33 @@ export function generate_html(type = 'verify-email', payload: any): string {
       );
     default:
       return '';
+  }
+}
+
+/**
+ *
+ * BLOCKCHAIN UTILS
+ *
+ *
+ */
+
+export class BlockchainValidator {
+  private collections: any;
+
+  constructor(options: any) {
+    this.collections = options.collections;
+  }
+
+  async get_whales(credentials: any): Promise<void> {
+    const err = { section: 'blockchain', type: 'get-whales' };
+
+    if (!credentials) {
+      throw { message: "Blockchain Credentials hasn't been provided", type: `${err.section}:${err.type}` };
+    }
+
+    if (!credentials.chain || typeof credentials.chain !== config.types.string) {
+      throw { message: 'Chain is not provided', type: `${err.section}:${err.type}` };
+    }
   }
 }
 
