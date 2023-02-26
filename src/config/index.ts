@@ -82,6 +82,8 @@ const config: IConfig = {
     send_emails: '/email/send-emails',
 
     settings: '/settings',
+
+    whales: '/blockchain/whales',
   },
 };
 

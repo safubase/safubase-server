@@ -65,5 +65,6 @@ export default interface IConfig {
     readonly send_email_reset_link: string;
     readonly send_emails: string;
     readonly settings: string;
+    readonly whales: string;
   };
 }
