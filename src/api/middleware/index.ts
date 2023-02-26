@@ -1,6 +1,6 @@
 'use strict';
 
-export function prevalidation(calls: Function | Function[] | null, services: any, options: any): (request: any, reply: any) => Promise<void> {
+export function prevalidation(calls: Function | Function[] | null, options: any): (request: any, reply: any) => Promise<void> {
   if (calls === null) {
     return async function (request: any, reply: any): Promise<void> {
       return;
@@ -16,7 +16,7 @@ export function prevalidation(calls: Function | Function[] | null, services: any
       const promises: Promise<boolean>[] = [];
       for (let i: number = 0; i < calls.length; i++) {
         // cprom stands for current promise or callback promise;
-        const cprom: Promise<boolean> = calls[i](request, services, options);
+        const cprom: Promise<boolean> = calls[i](request, options);
         promises.push(cprom);
       }
 
@@ -41,7 +41,7 @@ export function prevalidation(calls: Function | Function[] | null, services: any
     }
 
     try {
-      const result = await calls(request, services, options);
+      const result = await calls(request, options);
 
       if (result === false) {
         reply.status(401).send({

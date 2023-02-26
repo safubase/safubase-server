@@ -4,7 +4,6 @@
 
 // INTERFACES
 import { FastifyInstance } from 'fastify';
-import IOptions from 'interfaces/common';
 
 // CONFIG
 import config from './config';
@@ -13,15 +12,12 @@ import config from './config';
 import load_server from './loaders';
 
 async function init(): Promise<void> {
-  // Specify port and host for fastify
-  const port: number = Number(config.env.PORT);
-  const host: string = config.env.HOST;
-
   // load_ferver returns a fastify instance with configured routes as well as mongodb database
   const server: FastifyInstance = await load_server();
-  await server.listen({ port, host });
 
-  console.log(`🛡️ Server listening on port: ${port} 🛡️`);
+  await server.listen({ port: Number(config.env.PORT), host: config.env.HOST });
+
+  console.log(`🛡️ Server listening on port: ${config.env.PORT} 🛡️`);
 }
 
 init();

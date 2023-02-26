@@ -1,7 +1,7 @@
 {
   "name": "safubase-api",
   "version": "1.0.0",
-  "description": "Safu Base app",
+  "description": "safubase API",
   "main": "src/index.ts",
   "scripts": {
     "start": "node build/index.js",

@@ -93,7 +93,7 @@ export async function clear_sessions(options: IOptions): Promise<void> {
     const ip: string = session[1];
     const created_at: string = session[2];
 
-    const expire_at: number = Number(created_at) + config.env.SESSION_LIFETIME;
+    const expire_at: number = Number(created_at) + Number(config.env.SESSION_LIFETIME);
 
     if (expire_at < Date.now()) {
       options.redis.hDel('sessions', key);

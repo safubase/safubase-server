@@ -14,7 +14,11 @@ import config from '../config';
 // COMMON UTILS
 import { remove_extra_space, validate_base64 } from './common';
 
-// AUTH UTILS
+/**
+ *
+ * AUTH UTILS
+ *
+ */
 export class AuthValidator {
   private options: any;
   private collections: any;
@@ -278,24 +282,23 @@ export class AuthValidator {
   }
 
   async change_password(credentials: any): Promise<void> {
-    const types = config.types;
     const err = { section: 'auth', type: 'change-password' };
 
-    if (!credentials || typeof credentials !== types.object) {
+    if (!credentials || typeof credentials !== config.types.object) {
       throw { message: 'Invalid credentials', type: `${err.section}:${err.type}` };
     }
 
-    const { user, current_password, new_password, new_password_verification }: any = credentials;
+    const { user, password, new_password, new_password_verification }: any = credentials;
 
-    if (!current_password || !new_password || !new_password_verification) {
+    if (!password || !new_password || !new_password_verification) {
       throw { message: 'Credential properties are missing', type: `${err.section}:${err.type}` };
     }
 
-    if (typeof current_password !== types.string || typeof new_password !== types.string || typeof new_password_verification !== types.string) {
+    if (typeof password !== config.types.string || typeof new_password !== config.types.string || typeof new_password_verification !== config.types.string) {
       throw { message: 'Credential properties are missing', type: `${err.section}:${err.type}` };
     }
 
-    if (current_password.length > 50 || new_password.length > 50 || new_password_verification.length > 256) {
+    if (password.length > 50 || new_password.length > 50 || new_password_verification.length > 256) {
       throw { message: 'Credential properties are invalid', type: `${err.section}:${err.type}` };
     }
 
@@ -307,7 +310,7 @@ export class AuthValidator {
       throw { message: "Passwords doesn't match", type: `${err.section}:${err.type}` };
     }
 
-    if (user.password !== Crypto.SHA256(current_password).toString()) {
+    if (user.password !== Crypto.SHA256(password).toString()) {
       throw { message: 'Wrong password', type: `${err.section}:${err.type}` };
     }
 
@@ -320,50 +323,40 @@ export class AuthValidator {
     }
   }
 
-  async reset_email(token: string): Promise<void> {
+  async reset_email(credentials: any): Promise<void> {
     const err = { section: 'auth', type: 'reset-email' };
-    const types = config.types;
 
-    if (!token) {
+    if (!credentials) {
       throw { message: "User Credentials hasn't been provided", type: `${err.section}:${err.type}` };
     }
 
-    if (typeof token !== types.string) {
+    if (typeof credentials.email !== config.types.string) {
       throw { message: 'Credentials are invalid', type: `${err.section}:${err.type}` };
     }
 
-    if (token.length > 256) {
+    if (credentials.email.length > 256) {
       throw { message: 'Email or token is too long', type: `${err.section}:${err.type}` };
     }
 
-    const user: Document | null = await this.collections.users.findOne({ email_reset_token: token });
-
-    if (!user) {
-      throw { message: "User with this credentials couldn't be found", type: `${err.section}:${err.type}` };
+    if (!validator.isEmail(credentials.email)) {
+      throw { message: 'Email is invalid', type: `${err.section}:${err.type}` };
     }
 
-    if (!user.email_reset_token || !user.email_reset_token_exp_at) {
-      throw { message: "User credentials with this token couldn't be found", type: `${err.section}:${err.type}` };
-    }
+    const existing_user: Document | null = await this.collections.users.findOne({ email: credentials.email });
 
-    if (user.email_reset_token !== token) {
-      throw { message: 'Wrong Token specified while changing the password', type: `${err.section}:${err.type}` };
-    }
-
-    if (user.email_reset_token_exp_at.valueOf() < Date.now()) {
-      throw { message: 'Expired', type: `${err.section}:${err.type}` };
+    if (existing_user) {
+      throw { message: 'User with this email already in use', type: `${err.section}:${err.type}` };
     }
   }
 
-  async verify_email(token: string): Promise<void> {
-    const types = config.types;
+  async verify_email(token: string): Promise<Document> {
     const err = { section: 'auth', type: 'verify-email' };
 
     if (!token || token.includes(' ')) {
       throw { message: "Token hasn't been provided", type: `${err.section}:${err.type}` };
     }
 
-    if (typeof token !== types.string) {
+    if (typeof token !== config.types.string) {
       throw { message: 'Token is in Invalid Type', type: `${err.section}:${err.type}` };
     }
 
@@ -390,10 +383,13 @@ export class AuthValidator {
     if (user.email_verification_token !== token) {
       throw { message: "Tokens doesn't match", type: `${err.section}:${err.type}` };
     }
+
+    return user;
   }
 }
 
-async function generate_ref_code(options: any, length: number = 6): Promise<string> {
+async function generate_ref_code(options: any): Promise<string> {
+  const length: number = 6;
   let code: string = Crypto.lib.WordArray.random(length).toString().toUpperCase();
   let user: Document = await options.collections.users.findOne({ ref_code: code });
 
@@ -432,20 +428,6 @@ export async function generate_email_verification_token(options: any): Promise<s
   return token;
 }
 
-export async function generate_email_reset_token(options: any): Promise<string> {
-  const collections = options.collections;
-
-  let token: string = Crypto.lib.WordArray.random(128).toString();
-  let user: Document = await collections.users.findOne({ email_reset_token: token });
-
-  while (user) {
-    token = Crypto.lib.WordArray.random(128).toString();
-    user = await collections.users.findOne({ email_reset_token: token });
-  }
-
-  return token;
-}
-
 export async function generate_password_reset_token(options: any): Promise<string> {
   let token: string = Crypto.lib.WordArray.random(128).toString();
   let user: Document | null = await options.collections.users.findOne({ password_reset_token: token });
@@ -461,6 +443,7 @@ export async function generate_password_reset_token(options: any): Promise<strin
 export async function create_user_doc(credentials: any, options: any): Promise<any> {
   const email_verification_token: string = await generate_email_verification_token(options);
   const ref_code: string = await generate_ref_code(options);
+
   const doc: any = {
     username: remove_extra_space(credentials.username).toLowerCase(),
     username_changed_at: null,
@@ -469,8 +452,6 @@ export async function create_user_doc(credentials: any, options: any): Promise<a
     email_verified: false,
     email_verification_token,
     email_verification_token_exp_at: new Date(Date.now() + config.times.one_hour_ms * 24),
-    email_reset_token: null,
-    email_reset_token_exp_at: null,
     password_reset_token: null,
     password_reset_token_exp_at: null,
     img: '',
@@ -486,7 +467,11 @@ export async function create_user_doc(credentials: any, options: any): Promise<a
   return doc;
 }
 
-// MAIL UTILS
+/**
+ *
+ * MAIL UTILS
+ *
+ */
 export class MailValidator {
   private collections: any;
 
@@ -495,33 +480,29 @@ export class MailValidator {
   }
 
   async send_verification_link(payload: any): Promise<Document> {
-    const types = config.types;
-    const { email, token } = payload;
     const err = { section: 'mail', type: 'send-verification-link' };
 
-    if (!email || !token || token.includes(' ')) {
+    if (!payload.email || !payload.token || payload.token.includes(' ')) {
       throw { message: "Email or token hasn't been provided", code: `${err.section}:${err.type}` };
     }
 
-    if (typeof email !== types.string || typeof token !== types.string) {
+    if (typeof payload.email !== config.types.string || typeof payload.token !== config.types.string) {
       throw { message: 'Email or Token is in invalid type', code: `${err.section}:${err.type}` };
     }
 
-    if (!validator.isEmail(email)) {
+    if (!validator.isEmail(payload.email)) {
       throw { message: 'Email is invalid', code: `${err.section}:${err.type}` };
     }
 
-    if (!validator.isAlphanumeric(token)) {
+    if (!validator.isAlphanumeric(payload.token)) {
       throw { message: 'Token is in invalid format', code: `${err.section}:${err.type}` };
     }
 
-    if (token.length > 256) {
+    if (payload.token.length > 256) {
       throw { message: 'Token is too long', code: `${err.section}:${err.type}` };
     }
 
-    const user: Document | null = await this.collections.users.findOne({
-      email,
-    });
+    const user: Document | null = await this.collections.users.findOne({ email: payload.email });
 
     if (!user) {
       throw { message: 'User with this token is missing', code: `${err.section}:${err.type}` };
@@ -535,14 +516,13 @@ export class MailValidator {
   }
 
   async resend_verification_link(email: string): Promise<Document> {
-    const types = config.types;
     const err = { section: 'mail', type: 'resend-verification-link' };
 
     if (!email) {
       throw { message: "Email  hasn't been provided", code: `${err.section}:${err.type}` };
     }
 
-    if (typeof email !== types.string) {
+    if (typeof email !== config.types.string) {
       throw { message: 'Email is in Invalid type', code: `${err.section}:${err.type}` };
     }
 
@@ -550,9 +530,7 @@ export class MailValidator {
       throw { message: 'Email is invalid', code: `${err.section}:${err.type}` };
     }
 
-    const user: Document | null = await this.collections.users.findOne({
-      email,
-    });
+    const user: Document | null = await this.collections.users.findOne({ email });
 
     if (!user) {
       throw { message: 'User with this token is missing', code: `${err.section}:${err.type}` };
@@ -693,7 +671,6 @@ export default {
   AuthValidator,
   create_session,
   generate_email_verification_token,
-  generate_email_reset_token,
   generate_password_reset_token,
   create_user_doc,
   MailValidator,

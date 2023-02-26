@@ -13,7 +13,7 @@ import { UploadResponse } from 'imagekit/dist/libs/interfaces';
 import config from '../config';
 
 // UTILS
-import { AuthValidator, create_user_doc, create_session, generate_html } from '../utils/services';
+import { AuthValidator, create_user_doc, create_session, generate_html, generate_email_verification_token } from '../utils/services';
 import { remove_extra_space } from '../utils/common';
 
 class AuthService {
@@ -59,15 +59,13 @@ class AuthService {
       return null;
     }
 
-    const { _id, email, username, email_verified, role, img, premium }: Document = user;
     const profile = {
-      _id,
-      email,
-      username,
-      email_verified,
-      role,
-      img,
-      premium,
+      _id: user._id,
+      email: user.email,
+      username: user.username,
+      email_verified: user.email_verified,
+      role: user.role,
+      img: user.img,
     };
 
     return profile;
@@ -76,46 +74,39 @@ class AuthService {
   async edit_profile(credentials: any): Promise<any> {
     await this.auth_validator.edit_profile(credentials, this.options);
 
-    const user: Document = credentials.user;
-    const username: string = remove_extra_space(credentials.username).toLowerCase();
-    const img_base64: string = credentials.img_base64;
     let imagekit_url: string = '';
 
-    if (img_base64) {
-      const base64_buffer: string[] = img_base64.split(';base64,');
+    if (credentials.img_base64) {
+      const base64_buffer: string[] = credentials.img_base64.split(';base64,');
       const base64_type: string = base64_buffer[0];
       const base64_data: string = base64_buffer[1];
       const file_ext: string = base64_type.split('/')[1];
       const file_name: string = Crypto.lib.WordArray.random(32).toString() + '.' + file_ext;
+      const imagekit_res: UploadResponse = await this.imagekit.upload({ file: base64_data, fileName: file_name });
 
-      const res: UploadResponse = await this.imagekit.upload({
-        file: base64_data,
-        fileName: file_name,
-      });
-
-      imagekit_url = res.url;
+      imagekit_url = imagekit_res.url;
     }
 
     // update user credentials
     await this.collections.users.updateOne(
-      { _id: user._id },
+      { _id: credentials.user._id },
       {
         $set: {
-          username,
-          username_changed_at: username !== user.username ? new Date() : user.username_changed_at,
-          img: imagekit_url ? imagekit_url : user.img,
+          username: remove_extra_space(credentials.username).toLowerCase(),
+          username_changed_at: credentials.username !== credentials.user.username ? new Date() : credentials.user.username_changed_at,
+          img: imagekit_url ? imagekit_url : credentials.user.img,
         },
       },
     );
 
     // create client user to send it back to client to see the updated values.
     const profile = {
-      _id: user._id,
-      email: user.email,
-      username,
-      email_verified: user.email_verified,
-      role: user.role,
-      img: user.img,
+      _id: credentials.user._id,
+      email: credentials.user.email,
+      username: credentials.username,
+      email_verified: credentials.user.email_verified,
+      role: credentials.user.role,
+      img: credentials.user.img,
     };
 
     return profile;
@@ -125,11 +116,8 @@ class AuthService {
     await this.auth_validator.signup(credentials, this.options);
 
     const doc = await create_user_doc(credentials, this.options);
-
     const insert_one_result: InsertOneResult = await this.collections.users.insertOne(doc);
-
     const sid: string = await create_session({ user_id: insert_one_result.insertedId.toString(), ip: credentials.ip }, this.options);
-
     const profile = {
       _id: insert_one_result.insertedId,
       email: doc.email,
@@ -151,25 +139,27 @@ class AuthService {
   async signin(credentials: any): Promise<any> {
     // check all the credentials, just a bunch of if statements, all valid if the array is empty.
     const user: Document = await this.auth_validator.signin(credentials, this.options);
-    const premium: Document | null = await this.collections.premiums.findOne({ user_id: user._id });
+    /**
+     *     
+     * 
+      const premium: Document | null = await this.collections.premiums.findOne({ user_id: user._id });
 
-    if (premium && premium.exp_at.valueOf() > new Date().valueOf() && premium.status === 2) {
-      user.premium = true;
-    }
+      if (premium && premium.exp_at.valueOf() > new Date().valueOf() && premium.status === 2) {
+        user.premium = true;
+      }
+     * 
+     */
 
-    const { ip, mail_service } = credentials;
-    const last_ip: string = user.last_ip || '';
-
-    if (ip !== last_ip && validator.isIP(last_ip) && last_ip) {
+    if (credentials.ip !== user.last_ip && validator.isIP(user.last_ip) && user.last_ip) {
       const content = {
-        subject: `New Login to ${config.env.URL_UI} from:` + ip,
-        html: generate_html('new-ip', { username: user.username, ip }),
+        subject: `New Login to ${config.env.URL_UI} from:` + credentials.ip,
+        html: generate_html('new-ip', { username: user.username, ip: credentials.ip }),
       };
 
-      mail_service.send_emails({ emails: [user.email], content });
+      this.options.services.mail.send_emails({ emails: [user.email], content });
     }
 
-    const sid: string = await create_session({ user_id: user._id, ip }, this.options);
+    const sid: string = await create_session({ user_id: user._id, ip: credentials.ip }, this.options);
     const profile = {
       _id: user._id,
       email: user.email,
@@ -177,49 +167,40 @@ class AuthService {
       email_verified: user.email_verified,
       role: user.role,
       img: user.img,
-      premium: user.premium,
-    };
-    const signinResult = {
-      user: profile,
-      sid,
+      //premium: user.premium,
     };
 
-    return signinResult;
+    const result = { user: profile, sid };
+
+    return result;
   }
 
   async signout(credentials: any): Promise<void> {
-    const { sid } = credentials;
-
     await this.auth_validator.signout(credentials);
-    await this.options.redis.hDel('sessions', sid);
+    await this.options.redis.hDel('sessions', credentials.sid);
   }
 
   async verify_email(token: string): Promise<any> {
-    await this.auth_validator.verify_email(token, this.options);
-
-    const user: any = await this.collections.users.findOne({
-      emailVerificationToken: token,
-    });
+    const user = await this.auth_validator.verify_email(token, this.options);
 
     await this.collections.users.updateOne(
       { _id: user._id },
       {
         $set: {
-          emailVerified: true,
-          emailVerificationToken: null,
-          emailVerificationTokenExpDate: null,
-          updatedAt: new Date(),
+          email_verified: true,
+          email_verification_token: null,
+          email_verification_token_exp_at: null,
+          updated_at: new Date(),
         },
       },
     );
 
-    const { email, username, role } = user;
     const profile = {
       _id: user._id,
-      email,
-      username,
+      email: user.email,
+      username: user.username,
       email_verified: true,
-      role,
+      role: user.role,
       img: user.img,
     };
 
@@ -229,28 +210,25 @@ class AuthService {
   async reset_password(credentials: any): Promise<any> {
     await this.auth_validator.reset_password(credentials, this.options);
 
-    const { password, token } = credentials;
-    const user: any = await this.collections.users.findOne({ password_reset_token: token });
-    const user_id: string = user._id.toString();
-    const redis = this.options.redis;
+    const user: any = await this.collections.users.findOne({ password_reset_token: credentials.token });
 
     await this.collections.users.updateOne(
-      { password_reset_token: token },
+      { password_reset_token: credentials.token },
       {
         $set: {
-          password: Crypto.SHA256(password).toString(),
-          passwordResetToken: null,
-          passwordResetTokenExpDate: null,
-          updatedAt: new Date(),
+          password: Crypto.SHA256(credentials.password).toString(),
+          password_reset_token: null,
+          password_reset_token_exp_at: null,
+          updated_at: new Date(),
         },
       },
     );
 
-    const sessions = await redis.hGetAll('sessions');
+    const sessions = await this.options.redis.hGetAll('sessions');
 
     for (const key in sessions) {
-      if (sessions[key].includes(user_id)) {
-        redis.hDel('sessions', key);
+      if (sessions[key].includes(user._id.toString())) {
+        this.options.redis.hDel('sessions', key);
       }
     }
 
@@ -269,54 +247,58 @@ class AuthService {
   async change_password(credentials: any): Promise<any> {
     await this.auth_validator.change_password(credentials, this.options);
 
-    const { user, newPassword }: any = credentials;
-
     await this.collections.users.updateOne(
-      { _id: user._id },
+      { _id: credentials.user._id },
       {
         $set: {
-          password: Crypto.SHA256(newPassword).toString(),
+          password: Crypto.SHA256(credentials.new_password).toString(),
           updated_at: new Date(),
         },
       },
     );
 
     const profile = {
-      _id: user._id,
-      email: user.email,
-      username: user.username,
-      email_verified: user.email_verified,
-      role: user.role,
-      img: user.img,
+      _id: credentials.user._id,
+      email: credentials.user.email,
+      username: credentials.user.username,
+      email_verified: credentials.user.email_verified,
+      role: credentials.user.role,
+      img: credentials.user.img,
     };
 
     return profile;
   }
 
-  async reset_email(token: string): Promise<any> {
-    await this.auth_validator.reset_email(token, this.options);
-    const user: any = await this.collections.users.findOne({ email_reset_token: token });
+  async reset_email(credentials: any): Promise<any> {
+    await this.auth_validator.reset_email(credentials, this.options);
+
+    const email_verification_token: string = await generate_email_verification_token(this.options);
 
     await this.collections.users.updateOne(
-      { email_reset_token: token },
+      { _id: credentials.user._id },
       {
         $set: {
-          email: user.newEmail,
-          email_reset_token: null,
-          email_reset_token_exp_at: null,
-          email_verified: true,
+          email: credentials.email,
+          email_verification_token: email_verification_token,
+          email_verification_token_exp_at: new Date(Date.now() + config.times.one_hour_ms * 24),
+          email_verified: false,
           updated_at: new Date(),
         },
       },
     );
 
+    await this.options.services.mail.send_verification_link({
+      email: credentials.email,
+      token: email_verification_token,
+    });
+
     const profile = {
-      _id: user._id,
-      role: user.role,
-      email: user.newEmail,
-      username: user.username,
-      email_verified: user.email_verified,
-      img: user.img,
+      _id: credentials.user._id,
+      role: credentials.user.role,
+      email: credentials.email,
+      username: credentials.user.username,
+      email_verified: false,
+      img: credentials.user.img,
     };
 
     return profile;

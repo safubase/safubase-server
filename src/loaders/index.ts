@@ -20,9 +20,8 @@ async function load_server(): Promise<FastifyInstance> {
     db: {},
     collections: {},
     redis: {},
+    services: {},
   };
-
-  const cs: string = config.env.DB_CONN_STR;
 
   // LOADING COMPONENTS order has to be => 1. logger and redis functions 2. mongodb configurations 3. cron jobs initializations and fastify route bindings
 
@@ -34,7 +33,7 @@ async function load_server(): Promise<FastifyInstance> {
   logger.info('Redis loaded...');
 
   // configure mongodb
-  await load_mongodb(cs, options);
+  await load_mongodb(config.env.DB_CONN_STR, options);
   logger.info('Mongodb loaded...');
 
   // Then initialize cron jobs and bind routes to fastify with the given configured mongodb object; options.collections or options.db

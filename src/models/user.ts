@@ -30,12 +30,6 @@ const schema = {
     email_verification_token_exp_at: {
       bsonType: [config.types.date, config.types.null],
     },
-    email_reset_token: {
-      bsonType: [config.types.string, config.types.null],
-    },
-    email_reset_token_exp_at: {
-      bsonType: [config.types.date, config.types.null],
-    },
     password_reset_token: {
       bsonType: [config.types.string, config.types.null],
     },

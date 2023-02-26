@@ -3,6 +3,7 @@
 // MODULES
 import { CronJob } from 'cron';
 import ImageKit from 'imagekit';
+import axios from 'axios';
 
 // CONFIG
 import config from '../config';
@@ -19,6 +20,10 @@ async function load_cron(options: any): Promise<void> {
     publicKey: config.env.IMAGEKIT_PUBLIC_KEY,
     privateKey: config.env.IMAGEKIT_PRIVATE_KEY,
     urlEndpoint: `https://ik.imagekit.io/${config.env.IMAGEKIT_ID}/`,
+  });
+
+  axios.get('https://dexcheck.io/eth-api/whale_watcher?amount_min=10000&chain=bsc&exclude_stable=true&size=20&exclude_bots=0&page=1').then((res) => {
+    console.log(res.data.trs);
   });
 
   // Every midnight

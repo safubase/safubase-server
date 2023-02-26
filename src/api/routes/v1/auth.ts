@@ -15,7 +15,7 @@ import schemas from '../../schemas';
 // CONFIG
 import config from '../../../config';
 
-function bind_auth_routes(server: FastifyInstance, services: any, options: any): FastifyInstance {
+function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstance {
   // @ Route Options Area
   const routes: IRoutes = {
     // #title: GET PROFILE
@@ -24,7 +24,7 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
     get_profile: {
       method: 'GET',
       url: '/v1' + config.endpoints.profile,
-      preValidation: mws.prevalidation(null, services, options),
+      preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = {
           sid: request.cookies[config.env.SESSION_NAME],
@@ -32,7 +32,7 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
         };
 
         try {
-          const profile = await services.auth.get_profile(credentials);
+          const profile = await options.services.auth.get_profile(credentials);
 
           reply.send(profile);
         } catch (err: any) {
@@ -51,12 +51,12 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(mw_auth.is_auth, services, options),
+      preValidation: mws.prevalidation(mw_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = { ...request.body, user: request.user };
 
         try {
-          const result = await services.auth.edit_profile(credentials);
+          const result = await options.services.auth.edit_profile(credentials);
 
           reply.send(result);
         } catch (err: any) {
@@ -75,7 +75,7 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(null, services, options),
+      preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         const credentials = {
           ...request.body,
@@ -83,17 +83,16 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
         };
 
         try {
-          const result = await services.auth.signup(credentials);
-          const sid: string = result.sid;
+          const result = await options.services.auth.signup(credentials);
 
           // Sending confirmation mail to those who just signed up
-          services.mail.send_verification_link({
+          await options.services.mail.send_verification_link({
             email: result.user.email,
             token: result.email_verification_token,
           });
 
           reply
-            .setCookie(config.env.SESSION_NAME, sid, {
+            .setCookie(config.env.SESSION_NAME, result.sid, {
               httpOnly: true,
               secure: true,
               host: config.env.URL_UI,
@@ -116,27 +115,24 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(null, services, options),
+      preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         const credentials = {
           ...request.body,
           ip: request.ip,
-          mail_service: services.mail,
         };
 
         try {
-          const result = await services.auth.signin(credentials);
-          const user = result.user;
-          const sid: string = result.sid; // session id
+          const result = await options.services.auth.signin(credentials);
 
           reply
-            .setCookie(config.env.SESSION_NAME, sid, {
+            .setCookie(config.env.SESSION_NAME, result.sid, {
               httpOnly: true,
               secure: true,
               host: config.env.URL_UI,
               path: '/',
             })
-            .send(user);
+            .send(result.user);
         } catch (err: any) {
           reply.status(422).send(err);
         }
@@ -148,17 +144,15 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
     signout: {
       method: 'GET',
       url: '/v1' + config.endpoints.signout,
-      preValidation: mws.prevalidation(mw_auth.is_auth, services, options),
+      preValidation: mws.prevalidation(mw_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
-        const user: Document = request.user;
-        const sid: string | null = request.cookies[config.env.SESSION_NAME];
         const credentials: any = {
-          sid,
-          user,
+          sid: request.cookies[config.env.SESSION_NAME],
+          user: request.user,
         };
 
         try {
-          await services.auth.signout(credentials);
+          await options.services.auth.signout(credentials);
 
           reply
             .setCookie(config.env.SESSION_NAME, null, {
@@ -181,7 +175,7 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(null, services, options),
+      preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         const credentials = {
           ...request.body,
@@ -189,7 +183,7 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
         };
 
         try {
-          const user = await services.auth.reset_password(credentials);
+          const user = await options.services.auth.reset_password(credentials);
 
           reply.send(user);
         } catch (err: any) {
@@ -208,16 +202,15 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(mw_auth.is_auth, services, options),
+      preValidation: mws.prevalidation(mw_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
-        const user: Document = request.user;
-        const credentials = {
-          user,
+        const credentials: any = {
           ...request.body,
+          user: request.user,
         };
 
         try {
-          const user = await services.auth.change_password(credentials);
+          const user = await options.services.auth.change_password(credentials);
 
           reply.send(user);
         } catch (err: any) {
@@ -229,19 +222,22 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
     // #state: Private
     // #desc: Sends a link to the users new email, after click the link in the new email it resets and make that email the new one .
     reset_email: {
-      method: 'GET',
+      method: 'POST',
       url: '/v1' + config.endpoints.reset_email,
       schema: {
         response: {
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(null, services, options),
+      preValidation: mws.prevalidation(mw_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
-        const token: string = request.params.token;
+        const credentials: any = {
+          ...request.body,
+          user: request.user,
+        };
 
         try {
-          const user = await services.auth.reset_email(token);
+          const user = await options.services.auth.reset_email(credentials);
 
           reply.send(user);
         } catch (err: any) {
@@ -255,12 +251,10 @@ function bind_auth_routes(server: FastifyInstance, services: any, options: any):
     verify_email: {
       method: 'GET',
       url: '/v1' + config.endpoints.verify_email,
-      preValidation: mws.prevalidation(null, services, options),
+      preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
-        const token: string = request.params.token;
-
         try {
-          const user = await services.auth.verify_email(token);
+          const user = await options.services.auth.verify_email(request.params.token);
 
           reply.send(user);
         } catch (error) {

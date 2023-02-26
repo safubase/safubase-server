@@ -6,22 +6,16 @@ import { Document, ObjectId } from 'mongodb';
 // CONFIG
 import config from '../../config';
 
-export async function is_admin(request: any, services: any, options: any): Promise<boolean> {
-  if (!request || !services || !options) {
-    throw new Error('Too few arguments specified for isAuth');
-  }
-
+export async function is_admin(request: any, options: any): Promise<boolean> {
   if (!request.cookies) {
     return false;
   }
 
-  const sid: string = request.cookies[config.env.SESSION_NAME];
-
-  if (!sid) {
+  if (!request.cookies[config.env.SESSION_NAME]) {
     return false;
   }
 
-  const session: string = await options.redis.hGet('sessions', sid);
+  const session: string = await options.redis.hGet('sessions', request.cookies[config.env.SESSION_NAME]);
 
   if (!session) {
     return false;
@@ -30,9 +24,9 @@ export async function is_admin(request: any, services: any, options: any): Promi
   const session_parts: string[] = session.split('_');
   const user_id: string = session_parts[0];
   const ip: string = session_parts[1];
-  const time: string = session_parts[2];
+  const created_at: string = session_parts[2];
 
-  if (Number(time) + config.env.SESSION_LIFETIME < Date.now()) {
+  if (Number(created_at) + config.env.SESSION_LIFETIME < Date.now()) {
     return false;
   }
 
@@ -55,7 +49,7 @@ export async function is_admin(request: any, services: any, options: any): Promi
   return true;
 }
 
-export async function is_auth(request: any, services: any, options: any): Promise<boolean> {
+export async function is_auth(request: any, options: any): Promise<boolean> {
   if (!request.cookies) {
     return false;
   }
@@ -107,11 +101,7 @@ export async function is_auth(request: any, services: any, options: any): Promis
   return true;
 }
 
-export async function is_premium(request: any, services: any, options: any): Promise<boolean> {
-  if (!request || !services || !options) {
-    throw new Error('Too few arguments specified for is_premium');
-  }
-
+export async function is_premium(request: any, options: any): Promise<boolean> {
   if (!request.cookies) {
     return false;
   }

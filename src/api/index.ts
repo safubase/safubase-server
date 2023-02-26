@@ -12,17 +12,22 @@ import MailService from '../services/mail';
 import bind_auth_routes from './routes/v1/auth';
 import bind_mail_routes from './routes/v1/mail';
 
-// Bind all serve routes here
+// Bind all server routes here
 function bind_routes(server: FastifyInstance, options: any): FastifyInstance {
   // Initialize all services here once to pass them into route binders
-  const services: IServices = {
+  const services: any = {
     auth: new AuthService(options),
     mail: new MailService(options),
   };
 
+  // bind initialized services to options
+  for (const key in services) {
+    options.services[key] = services[key];
+  }
+
   // Bind the routes and paths to fastify instance. e.g. server.route({ method: 'GET', handler: (request: any, reply: any) => {} })
-  bind_auth_routes(server, services, options);
-  bind_mail_routes(server, services, options);
+  bind_auth_routes(server, options);
+  bind_mail_routes(server, options);
 
   // Return the same fastify instance but this routes binded
   return server;

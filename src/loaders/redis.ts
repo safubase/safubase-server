@@ -12,6 +12,8 @@ async function load_redis(options: any) {
 
   await client.connect();
 
+  await client.hSet('settings', 'test', '1');
+
   options.redis = client;
 
   return client;

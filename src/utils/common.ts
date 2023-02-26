@@ -7,9 +7,7 @@ import validator from 'validator';
 import config from '../config';
 
 export function validate_base64(base64: string, err: any): void {
-  const types = config.types;
-
-  if (typeof base64 !== types.string) {
+  if (typeof base64 !== config.types.string) {
     throw { message: 'Logo is invalid type', type: `${err.section}:${err.type}` };
   }
 

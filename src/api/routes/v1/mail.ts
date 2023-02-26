@@ -14,31 +14,27 @@ import schemas from '../../schemas';
 // CONFIG
 import config from '../../../config';
 
-function bindMailRoutes(server: FastifyInstance, services: any, options: any): FastifyInstance {
-  const types = config.types;
-
+function bind_mail_routes(server: FastifyInstance, options: any): FastifyInstance {
   // @ Route Options Area
   const routes: IRoutes = {
-    send_email_verification_link: {
+    resend_email_verification_link: {
       method: 'POST',
       url: '/v1' + config.endpoints.send_email_verification_link,
       schema: {
         response: {
           200: {
-            type: types.object,
+            type: config.types.object,
             properties: {
-              success: { type: types.boolean },
-              message: { type: types.string },
+              success: { type: config.types.boolean },
+              message: { type: config.types.string },
             },
           },
         },
       },
-      preValidation: mw.prevalidation(mw_auth.is_auth, services, options),
+      preValidation: mw.prevalidation(mw_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
-        const { email } = request.body;
-
         try {
-          await services.mail.resend_verification_link(email);
+          await options.services.mail.resend_verification_link(request.body.email);
 
           const response = {
             success: true,
@@ -60,10 +56,10 @@ function bindMailRoutes(server: FastifyInstance, services: any, options: any): F
           200: schemas.user,
         },
       },
-      preValidation: mw.prevalidation(null, services, options),
+      preValidation: mw.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         try {
-          await services.mail.send_password_reset_link(request.body.email);
+          await options.services.mail.send_password_reset_link(request.body.email);
 
           const response = {
             success: true,
@@ -85,7 +81,7 @@ function bindMailRoutes(server: FastifyInstance, services: any, options: any): F
           200: schemas.user,
         },
       },
-      preValidation: mw.prevalidation(mw_auth.is_auth, services, options),
+      preValidation: mw.prevalidation(mw_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials = {
           ...request.body,
@@ -93,7 +89,7 @@ function bindMailRoutes(server: FastifyInstance, services: any, options: any): F
         };
 
         try {
-          await services.mail.send_email_reset_link(credentials);
+          await options.services.mail.send_email_reset_link(credentials);
 
           const response = {
             success: true,
@@ -117,4 +113,4 @@ function bindMailRoutes(server: FastifyInstance, services: any, options: any): F
   return server;
 }
 
-export default bindMailRoutes;
+export default bind_mail_routes;
