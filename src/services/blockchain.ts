@@ -15,7 +15,6 @@ import config from '../config';
 
 // UTILS
 import { BlockchainValidator } from '../utils/services';
-import { remove_extra_space } from '../utils/common';
 
 class BlockchainService {
   private options: any;
@@ -34,6 +33,15 @@ class BlockchainService {
 
     const api_match: any = { avalanche: 'avax', fantom: 'ftm', arbitrum: 'arb', polygon: 'poly', bsc: 'bsc', eth: 'eth' };
     const url = 'https://dexcheck.io/' + api_match[credentials.chain.toLowerCase()] + '-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
+    const res = await axios.get(url);
+
+    return res.data.trs;
+  }
+
+  async get_upcoming_unlocks(credentials: any) {
+    await this.blockchain_validator.get_upcoming_unlocks(credentials);
+
+    const url = 'https://dexcheck.io/unlocks/token_locks_combined?page=1';
     const res = await axios.get(url);
 
     return res.data.trs;

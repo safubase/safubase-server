@@ -66,5 +66,6 @@ export default interface IConfig {
     readonly send_emails: string;
     readonly settings: string;
     readonly whales: string;
+    readonly upcoming_unlocks: string;
   };
 }

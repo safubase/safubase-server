@@ -690,6 +690,14 @@ export class BlockchainValidator {
       throw { message: 'Chain is not provided', type: `${err.section}:${err.type}` };
     }
   }
+
+  async get_upcoming_unlocks(credentials: any): Promise<void> {
+    const err = { section: 'blockchain', type: 'get-upcoming-unlocks' };
+
+    if (!credentials) {
+      throw { message: "Blockchain Credentials hasn't been provided", type: `${err.section}:${err.type}` };
+    }
+  }
 }
 
 export default {

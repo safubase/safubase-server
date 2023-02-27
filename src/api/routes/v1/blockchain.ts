@@ -40,6 +40,29 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
         }
       },
     },
+    get_upcoming_unlocks: {
+      method: 'GET',
+      url: '/v1' + config.endpoints.upcoming_unlocks,
+      schema: {
+        querystring: {
+          chain: { type: 'string' },
+        },
+      },
+      preValidation: mw.prevalidation(null, options),
+      handler: async function (request: any, reply: any) {
+        const credentials = {
+          chain: request.query.chain,
+        };
+
+        try {
+          const result = await options.services.blockchain.get_upcoming_unlocks(credentials);
+
+          reply.send(result);
+        } catch (error) {
+          reply.status(422).send(error);
+        }
+      },
+    },
   };
 
   const allRoutes: any[] = Object.values(routes);

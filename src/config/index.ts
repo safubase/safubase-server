@@ -84,6 +84,7 @@ const config: IConfig = {
     settings: '/settings',
 
     whales: '/blockchain/whales',
+    upcoming_unlocks: '/blockchain/upcoming-unlocks',
   },
 };
 
