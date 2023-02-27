@@ -32,7 +32,8 @@ class BlockchainService {
   async get_whales(credentials: any) {
     await this.blockchain_validator.get_whales(credentials);
 
-    const url = 'https://dexcheck.io/eth-api/whale_watcher?amount_min=10000&chain=' + credentials.chain + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
+    const url = 'https://dexcheck.io/eth-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
+    console.log(url);
     const res = await axios.get(url);
 
     return res.data.trs;
