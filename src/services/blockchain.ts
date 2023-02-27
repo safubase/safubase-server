@@ -32,8 +32,8 @@ class BlockchainService {
   async get_whales(credentials: any) {
     await this.blockchain_validator.get_whales(credentials);
 
-    const url = 'https://dexcheck.io/eth-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
-    console.log(url);
+    const api_match: any = { avalanche: 'avax', fantom: 'ftm', arbitrum: 'arb', polygon: 'poly', bsc: 'bsc', eth: 'eth' };
+    const url = 'https://dexcheck.io/' + api_match[credentials.chain.toLowerCase()] + '-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
     const res = await axios.get(url);
 
     return res.data.trs;

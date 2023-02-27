@@ -700,4 +700,5 @@ export default {
   create_user_doc,
   MailValidator,
   generate_html,
+  BlockchainValidator,
 };
