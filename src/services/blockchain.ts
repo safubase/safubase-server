@@ -44,7 +44,7 @@ class BlockchainService {
     const url = 'https://dexcheck.io/unlocks/token_locks_combined?page=1';
     const res = await axios.get(url);
 
-    return res.data.trs;
+    return res.data;
   }
 }
 
