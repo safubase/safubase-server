@@ -7,7 +7,7 @@ import { IRoutes } from 'interfaces/api';
 
 // API > MIDDLEWARE
 import mws from '../../middleware';
-import mw_auth from '../../middleware/auth';
+import mws_auth from '../../middleware/auth';
 
 // API > SCHEMAS
 import schemas from '../../schemas';
@@ -23,7 +23,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Check if request has session and user, response: IProfile | null
     get_profile: {
       method: 'GET',
-      url: '/v1' + config.endpoints.profile,
+      url: '/v1' + config.endpoints.auth_profile,
       preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = {
@@ -36,6 +36,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
 
           reply.send(profile);
         } catch (err: any) {
+          console.log(err);
           reply.status(422).send(err);
         }
       },
@@ -45,13 +46,13 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Allow signed in user to edit its profile credentials.
     edit_profile: {
       method: 'PUT',
-      url: '/v1' + config.endpoints.profile,
+      url: '/v1' + config.endpoints.auth_profile,
       schema: {
         response: {
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(mw_auth.is_auth, options),
+      preValidation: mws.prevalidation(mws_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = { ...request.body, user: request.user };
 
@@ -69,7 +70,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Signs the user to the database if their credentials is valid and give them a session id.
     signup: {
       method: 'POST',
-      url: '/v1' + config.endpoints.signup,
+      url: '/v1' + config.endpoints.auth_signup,
       schema: {
         response: {
           200: schemas.user,
@@ -95,6 +96,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
             .setCookie(config.env.SESSION_NAME, result.sid, {
               httpOnly: true,
               secure: true,
+              expires: new Date(Date.now() + config.env.SESSION_LIFETIME),
               host: config.env.URL_UI,
               path: '/',
             })
@@ -109,7 +111,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Sign users in and give them a session id.
     signin: {
       method: 'POST',
-      url: '/v1' + config.endpoints.signin,
+      url: '/v1' + config.endpoints.auth_signin,
       schema: {
         response: {
           200: schemas.user,
@@ -129,6 +131,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
             .setCookie(config.env.SESSION_NAME, result.sid, {
               httpOnly: true,
               secure: true,
+              expires: new Date(Date.now() + config.env.SESSION_LIFETIME),
               host: config.env.URL_UI,
               path: '/',
             })
@@ -143,8 +146,8 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Sign users out and remove their session id.
     signout: {
       method: 'GET',
-      url: '/v1' + config.endpoints.signout,
-      preValidation: mws.prevalidation(mw_auth.is_auth, options),
+      url: '/v1' + config.endpoints.auth_signout,
+      preValidation: mws.prevalidation(mws_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = {
           sid: request.cookies[config.env.SESSION_NAME],
@@ -169,7 +172,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Resets users password by sending token to the user with the specified email.
     reset_password: {
       method: 'POST',
-      url: '/v1' + config.endpoints.reset_password,
+      url: '/v1' + config.endpoints.auth_reset_password,
       schema: {
         response: {
           200: schemas.user,
@@ -196,13 +199,13 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Changes users password with authentication
     change_password: {
       method: 'POST',
-      url: '/v1' + config.endpoints.change_password,
+      url: '/v1' + config.endpoints.auth_change_password,
       schema: {
         response: {
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(mw_auth.is_auth, options),
+      preValidation: mws.prevalidation(mws_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = {
           ...request.body,
@@ -223,13 +226,13 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Sends a link to the users new email, after click the link in the new email it resets and make that email the new one .
     reset_email: {
       method: 'POST',
-      url: '/v1' + config.endpoints.reset_email,
+      url: '/v1' + config.endpoints.auth_reset_email,
       schema: {
         response: {
           200: schemas.user,
         },
       },
-      preValidation: mws.prevalidation(mw_auth.is_auth, options),
+      preValidation: mws.prevalidation(mws_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials: any = {
           ...request.body,
@@ -250,7 +253,7 @@ function bind_auth_routes(server: FastifyInstance, options: any): FastifyInstanc
     // #desc: Verifies user's email by sending token to the specified email
     verify_email: {
       method: 'GET',
-      url: '/v1' + config.endpoints.verify_email,
+      url: '/v1' + config.endpoints.auth_verify_email,
       preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         try {

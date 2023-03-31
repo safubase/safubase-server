@@ -45,6 +45,9 @@ const schema = {
     ref_from: {
       bsonType: [config.types.objectId, config.types.null],
     },
+    api_key: {
+      bsonType: [config.types.string, config.types.null],
+    },
     role: {
       enum: [config.roles.admin, config.roles.user],
     },

@@ -5,8 +5,8 @@ import { FastifyInstance } from 'fastify';
 import { IRoutes } from 'interfaces/api';
 
 // API > MIDDLEWARE
-import mw from '../../middleware';
-import mw_auth from '../../middleware/auth';
+import mws from '../../middleware';
+import mws_auth from '../../middleware/auth';
 
 // API > SCHEMAS
 import schemas from '../../schemas';
@@ -19,7 +19,7 @@ function bind_mail_routes(server: FastifyInstance, options: any): FastifyInstanc
   const routes: IRoutes = {
     resend_email_verification_link: {
       method: 'POST',
-      url: '/v1' + config.endpoints.send_email_verification_link,
+      url: '/v1' + config.endpoints.mail_send_email_verification_link,
       schema: {
         response: {
           200: {
@@ -31,7 +31,7 @@ function bind_mail_routes(server: FastifyInstance, options: any): FastifyInstanc
           },
         },
       },
-      preValidation: mw.prevalidation(mw_auth.is_auth, options),
+      preValidation: mws.prevalidation(mws_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         try {
           await options.services.mail.resend_verification_link(request.body.email);
@@ -50,13 +50,13 @@ function bind_mail_routes(server: FastifyInstance, options: any): FastifyInstanc
 
     send_password_reset_link: {
       method: 'POST',
-      url: '/v1' + config.endpoints.send_password_reset_link,
+      url: '/v1' + config.endpoints.mail_send_password_reset_link,
       schema: {
         response: {
           200: schemas.user,
         },
       },
-      preValidation: mw.prevalidation(null, options),
+      preValidation: mws.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         try {
           await options.services.mail.send_password_reset_link(request.body.email);
@@ -75,13 +75,13 @@ function bind_mail_routes(server: FastifyInstance, options: any): FastifyInstanc
 
     send_email_reset_link: {
       method: 'POST',
-      url: '/v1' + config.endpoints.send_email_reset_link,
+      url: '/v1' + config.endpoints.mail_send_email_reset_link,
       schema: {
         response: {
           200: schemas.user,
         },
       },
-      preValidation: mw.prevalidation(mw_auth.is_auth, options),
+      preValidation: mws.prevalidation(mws_auth.is_auth, options),
       handler: async function (request: any, reply: any) {
         const credentials = {
           ...request.body,
@@ -94,6 +94,30 @@ function bind_mail_routes(server: FastifyInstance, options: any): FastifyInstanc
           const response = {
             success: true,
             message: 'Successfully sent email reset link',
+          };
+
+          reply.send(response);
+        } catch (err: any) {
+          reply.status(422).send(err);
+        }
+      },
+    },
+
+    add_subscription_email: {
+      method: 'POST',
+      url: '/v1' + config.endpoints.mail_subscription_emails,
+      preValidation: mws.prevalidation(null, options),
+      handler: async function (request: any, reply: any) {
+        const credentials = {
+          ...request.body,
+        };
+
+        try {
+          await options.services.mail.add_subscription_email(credentials);
+
+          const response = {
+            success: true,
+            message: 'Successfully subscribed with email',
           };
 
           reply.send(response);

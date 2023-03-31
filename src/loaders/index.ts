@@ -23,6 +23,7 @@ async function load_server(): Promise<FastifyInstance> {
     services: {},
   };
 
+  // ORDER OF LOADER COMPONENTS ARE IMPORTANT
   // LOADING COMPONENTS order has to be => 1. logger and redis functions 2. mongodb configurations 3. cron jobs initializations and fastify route bindings
 
   // First load logger and redis functions
@@ -36,14 +37,14 @@ async function load_server(): Promise<FastifyInstance> {
   await load_mongodb(config.env.DB_CONN_STR, options);
   logger.info('Mongodb loaded...');
 
-  // Then initialize cron jobs and bind routes to fastify with the given configured mongodb object; options.collections or options.db
-  await load_cron(options);
-  logger.info('Cron jobs loaded...');
-
   // We get the mongo client to pass in the fastify application loader to use in the routes
   // Load the Fastify App with the configured mongo client.
   const server: FastifyInstance = await load_fastify(options);
   logger.info('Fastify loaded...');
+
+  // Then initialize cron jobs and bind routes to fastify with the given configured mongodb object; options.collections or options.db
+  await load_cron(options);
+  logger.info('Cron jobs loaded...');
 
   return server;
 }

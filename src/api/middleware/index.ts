@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ *
+ * FASTIFY ROUTE BINDING PIPELINE FUNCTIONS
+ *
+ */
 export function prevalidation(calls: Function | Function[] | null, options: any): (request: any, reply: any) => Promise<void> {
   if (calls === null) {
     return async function (request: any, reply: any): Promise<void> {

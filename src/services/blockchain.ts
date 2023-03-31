@@ -14,7 +14,7 @@ import { UploadResponse } from 'imagekit/dist/libs/interfaces';
 import config from '../config';
 
 // UTILS
-import { BlockchainValidator } from '../utils/services';
+import UTILS_SERVICES from '../utils/services';
 
 class BlockchainService {
   private options: any;
@@ -25,7 +25,7 @@ class BlockchainService {
   constructor(options: any) {
     this.options = options;
     this.collections = options.collections;
-    this.blockchain_validator = new BlockchainValidator(options);
+    this.blockchain_validator = new UTILS_SERVICES.BlockchainValidator(options);
   }
 
   async get_whales(credentials: any) {

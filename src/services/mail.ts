@@ -10,7 +10,7 @@ import { Document } from 'mongodb';
 import config from '../config';
 
 // UTILS
-import { MailValidator, generate_html, generate_password_reset_token, generate_email_verification_token } from '../utils/services';
+import UTILS_SERVICES from '../utils/services';
 
 class MailService {
   private options: any;
@@ -19,13 +19,9 @@ class MailService {
   private mail_validator: any;
 
   constructor(options: any) {
-    if (!options) {
-      throw new Error('Too few arguments provided in MailService');
-    }
-
     this.options = options;
     this.collections = options.collections;
-    this.mail_validator = new MailValidator(options);
+    this.mail_validator = new UTILS_SERVICES.MailValidator(options);
     this.transporter = nodemailer.createTransport({
       host: config.env.EMAIL_HOST,
       port: 465,
@@ -45,9 +41,9 @@ class MailService {
 
   async send_verification_link(payload: any): Promise<void> {
     const user: Document = await this.mail_validator.send_verification_link(payload, this.options);
-    const endpoint: string = config.endpoints.verify_email.split(':')[0];
+    const endpoint: string = config.endpoints.auth_verify_email.split(':')[0];
     const link: string = 'https://' + config.env.URL_UI + endpoint + payload.token;
-    const html: string = generate_html('verify-email', { username: user.username, link });
+    const html: string = UTILS_SERVICES.generate_html('verify-email', { username: user.username, link });
     const data: object = {
       from: config.env.EMAIL_NO_REPLY_USERNAME,
       to: payload.email, // to property represents the emails that will be sent emails to.
@@ -62,10 +58,11 @@ class MailService {
     });
   }
 
+  // Generates an email verification token, update users email verification token in the database, sends the verification link to users email
   async resend_verification_link(email: string): Promise<void> {
     const user: Document = await this.mail_validator.resend_verification_link(email, this.options);
-    const endpoint: string = config.endpoints.verify_email.split(':')[0];
-    const token: string = await generate_email_verification_token(this.options);
+    const endpoint: string = config.endpoints.auth_verify_email.split(':')[0];
+    const token: string = await UTILS_SERVICES.generate_email_verification_token(this.options);
 
     await this.collections.users.updateOne(
       { email },
@@ -79,11 +76,11 @@ class MailService {
     );
 
     const link: string = 'https://' + config.env.URL_UI + endpoint + token;
-    const html: string = generate_html('verify-email', { username: user.username, link });
+    const html: string = UTILS_SERVICES.generate_html('verify-email', { username: user.username, link });
     const data: object = {
       from: config.env.EMAIL_NO_REPLY_USERNAME,
       to: email, // to property represents the emails that will be sent emails to.
-      subject: 'Welcome to ' + config.env.URL_UI + ', Please Confirm your email',
+      subject: 'Welcome back, ' + config.env.URL_UI + ', Please Confirm your email',
       html,
     };
 
@@ -94,10 +91,11 @@ class MailService {
     });
   }
 
+  // Generates a password reset token, updated users password reset token in the database, sends the reset link to users email
   async send_password_reset_link(email: string): Promise<void> {
     const user: Document = await this.mail_validator.send_password_reset_link(email, this.options);
-    const endpoint: string = config.endpoints.reset_password.split(':')[0];
-    const token: string = await generate_password_reset_token(this.options);
+    const endpoint: string = config.endpoints.auth_reset_password.split(':')[0];
+    const token: string = await UTILS_SERVICES.generate_password_reset_token(this.options);
 
     await this.collections.users.updateOne(
       { email: email },
@@ -111,8 +109,7 @@ class MailService {
     );
 
     const link: string = 'https://' + config.env.URL_UI + endpoint + token;
-    const html: string = generate_html('reset-password', { username: user.username, link });
-
+    const html: string = UTILS_SERVICES.generate_html('reset-password', { username: user.username, link });
     const data: object = {
       from: config.env.EMAIL_NO_REPLY_USERNAME,
       to: email, // to property represents the emails that will be sent emails to.
@@ -142,6 +139,13 @@ class MailService {
         }
       });
     }
+  }
+
+  async add_subscription_email(credentials: any): Promise<Document> {
+    await this.mail_validator.add_subscription_email(credentials);
+    const doc = UTILS_SERVICES.create_subscription_email_doc(credentials);
+    const result = await this.options.collections.subscription_emails.insertOne(doc);
+    return doc;
   }
 }
 

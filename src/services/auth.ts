@@ -13,8 +13,8 @@ import { UploadResponse } from 'imagekit/dist/libs/interfaces';
 import config from '../config';
 
 // UTILS
-import { AuthValidator, create_user_doc, create_session, generate_html, generate_email_verification_token } from '../utils/services';
-import { remove_extra_space } from '../utils/common';
+import UTILS_SERVICES from '../utils/services';
+import UTILS_COMMON from '../utils/common';
 
 class AuthService {
   private options: any;
@@ -25,7 +25,7 @@ class AuthService {
   constructor(options: any) {
     this.options = options;
     this.collections = options.collections;
-    this.auth_validator = new AuthValidator(options);
+    this.auth_validator = new UTILS_SERVICES.AuthValidator(options);
     this.imagekit = new ImageKit({
       publicKey: config.env.IMAGEKIT_PUBLIC_KEY,
       privateKey: config.env.IMAGEKIT_PRIVATE_KEY,
@@ -45,7 +45,7 @@ class AuthService {
     const ip: string = sparts[1];
     const time: string = sparts[2];
 
-    if (Number(time) + config.env.SESSION_LIFETIME < Date.now()) {
+    if (Number(time) + config.env.SESSION_LIFETIME_MS < Date.now()) {
       return null;
     }
 
@@ -80,8 +80,10 @@ class AuthService {
       const base64_buffer: string[] = credentials.img_base64.split(';base64,');
       const base64_type: string = base64_buffer[0];
       const base64_data: string = base64_buffer[1];
+
       const file_ext: string = base64_type.split('/')[1];
       const file_name: string = Crypto.lib.WordArray.random(32).toString() + '.' + file_ext;
+
       const imagekit_res: UploadResponse = await this.imagekit.upload({ file: base64_data, fileName: file_name });
 
       imagekit_url = imagekit_res.url;
@@ -92,7 +94,7 @@ class AuthService {
       { _id: credentials.user._id },
       {
         $set: {
-          username: remove_extra_space(credentials.username).toLowerCase(),
+          username: UTILS_COMMON.str_remove_extra_space(credentials.username).toLowerCase(),
           username_changed_at: credentials.username !== credentials.user.username ? new Date() : credentials.user.username_changed_at,
           img: imagekit_url ? imagekit_url : credentials.user.img,
         },
@@ -115,9 +117,9 @@ class AuthService {
   async signup(credentials: any): Promise<any> {
     await this.auth_validator.signup(credentials, this.options);
 
-    const doc = await create_user_doc(credentials, this.options);
+    const doc = await UTILS_SERVICES.create_user_doc(credentials, this.options);
     const insert_one_result: InsertOneResult = await this.collections.users.insertOne(doc);
-    const sid: string = await create_session({ user_id: insert_one_result.insertedId.toString(), ip: credentials.ip }, this.options);
+    const sid: string = await UTILS_SERVICES.create_session({ user_id: insert_one_result.insertedId.toString(), ip: credentials.ip }, this.options);
     const profile = {
       _id: insert_one_result.insertedId,
       email: doc.email,
@@ -153,13 +155,13 @@ class AuthService {
     if (credentials.ip !== user.last_ip && validator.isIP(user.last_ip) && user.last_ip) {
       const content = {
         subject: `New Login to ${config.env.URL_UI} from:` + credentials.ip,
-        html: generate_html('new-ip', { username: user.username, ip: credentials.ip }),
+        html: UTILS_SERVICES.generate_html('new-ip', { username: user.username, ip: credentials.ip }),
       };
 
       this.options.services.mail.send_emails({ emails: [user.email], content });
     }
 
-    const sid: string = await create_session({ user_id: user._id, ip: credentials.ip }, this.options);
+    const sid: string = await UTILS_SERVICES.create_session({ user_id: user._id, ip: credentials.ip }, this.options);
     const profile = {
       _id: user._id,
       email: user.email,
@@ -272,7 +274,7 @@ class AuthService {
   async reset_email(credentials: any): Promise<any> {
     await this.auth_validator.reset_email(credentials, this.options);
 
-    const email_verification_token: string = await generate_email_verification_token(this.options);
+    const email_verification_token: string = await UTILS_SERVICES.generate_email_verification_token(this.options);
 
     await this.collections.users.updateOne(
       { _id: credentials.user._id },

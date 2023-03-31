@@ -19,7 +19,7 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
   const routes: IRoutes = {
     get_whales: {
       method: 'GET',
-      url: '/v1' + config.endpoints.whales,
+      url: '/v1' + config.endpoints.blockchain_whales,
       schema: {
         querystring: {
           chain: { type: 'string' },
@@ -42,7 +42,7 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
     },
     get_upcoming_unlocks: {
       method: 'GET',
-      url: '/v1' + config.endpoints.upcoming_unlocks,
+      url: '/v1' + config.endpoints.blockchain_upcoming_unlocks,
       schema: {
         querystring: {
           chain: { type: 'string' },

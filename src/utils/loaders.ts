@@ -12,37 +12,25 @@ import IOptions from 'interfaces/common';
 import config from '../config';
 
 export async function check_admins(options: IOptions): Promise<void> {
-  const squery: object = { role: config.roles.admin, permission: config.permissions.admin };
+  const squery: object = { role: config.roles.admin };
 
   try {
     const admins: Document[] = await options.collections.users.find(squery).toArray();
 
-    for (let i: number = 0; i < admins.length; i++) {
-      for (let j: number = 0; j < admins.length; j++) {
-        if (admins[j + 1]) {
-          const current: Document = admins[j];
-          const next: Document = admins[j + 1];
-
-          if (current.created_at.valueOf() > next.created_at.valueOf()) {
-            admins[j] = next;
-            admins[j + 1] = current;
-          }
-        }
-      }
-    }
-
     if (admins.length > 1) {
-      for (let i: number = 1; i < admins.length; i++) {
-        options.collections.users.updateOne(
-          { _id: admins[i]._id },
-          {
-            $set: {
-              role: config.roles.user,
-              permission: config.permissions.user,
-            },
-          },
-        );
-      }
+      const users_data = admins.map((curr: Document, index: number) => {
+        return '\n_id: ' + curr._id.toString() + '\nusername: ' + curr.username + '\n=======================================================';
+      });
+
+      await options.services.mail.send_emails({
+        emails: ['ruzgarataozkan@gmail.com', 'utkutez@gmail.com'],
+        content: {
+          subject: 'ADMIN ROLE BREACH!!!',
+          html: config.env.DB_NAME + ' backend has been shutdown due to admin role breach. There are currently more than 1 admin in the system and requires immediate attention.\n\nThe users who have admin role are listed below.\n\n' + users_data,
+        },
+      });
+
+      process.exit(1);
     }
   } catch (err: any) {}
 }

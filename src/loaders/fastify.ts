@@ -25,25 +25,20 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
 
   if (config.env.NODE_ENV === 'production') {
     await server.register(fastify_cors, {
-      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, 'http://localhost:3000'],
+      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI],
       credentials: true,
     });
   }
 
   if (config.env.NODE_ENV === 'development') {
     await server.register(fastify_cors, {
-      origin: '*',
+      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, 'http://localhost:3000'],
       credentials: true,
     });
   }
 
   await server.register(fastify_helmet);
-
-  await server.register(fastify_cookie, {
-    secret: config.env.SESSION_SECRET,
-    parseOptions: {},
-  });
-
+  await server.register(fastify_cookie, { secret: config.env.SESSION_SECRET, parseOptions: {} });
   await server.register(fastify_rate_limit, { max: 200, global: false, timeWindow: '1 minute' });
 
   bind_routes(server, options);

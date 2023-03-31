@@ -12,7 +12,7 @@ import { Document } from 'mongodb';
 import config from '../config';
 
 // COMMON UTILS
-import { remove_extra_space, validate_base64 } from './common';
+import UTILS_COMMON from './common';
 
 /**
  *
@@ -36,7 +36,7 @@ export class AuthValidator {
     }
 
     const { user, img_base64 } = credentials;
-    const username = remove_extra_space(credentials.username).toLowerCase();
+    const username = UTILS_COMMON.str_remove_extra_space(credentials.username).toLowerCase();
 
     if (!username) {
       throw { message: "Username hasn't been provided", type: `${err.section}:${err.type}` };
@@ -79,7 +79,7 @@ export class AuthValidator {
     }
 
     if (img_base64) {
-      validate_base64(img_base64, err);
+      UTILS_COMMON.validate_base64(img_base64, err);
     }
   }
 
@@ -98,8 +98,8 @@ export class AuthValidator {
 
     const { ip, password, password_verification, captcha_token } = credentials;
 
-    const email: string = remove_extra_space(credentials.email).toLowerCase();
-    const username: string = remove_extra_space(credentials.username).toLowerCase();
+    const email: string = UTILS_COMMON.str_remove_extra_space(credentials.email).toLowerCase();
+    const username: string = UTILS_COMMON.str_remove_extra_space(credentials.username).toLowerCase();
 
     if (!ip || !email || !username || !password || !password_verification) {
       throw { message: 'Credentials are missing', type: `${err.section}:${err.type}` };
@@ -438,14 +438,68 @@ export async function generate_password_reset_token(options: any): Promise<strin
   return token;
 }
 
+async function generate_api_key(options: any): Promise<string> {
+  const LENGTH: number = 40;
+  const buffer: string[] = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890'.split('');
+  const len_buf: number = buffer.length;
+
+  // mix the chars in buffer
+  for (let i: number = 0; i < len_buf; i++) {
+    const randx: number = Math.floor(Math.random() * len_buf);
+    const randy: number = Math.floor(Math.random() * len_buf);
+    const saved: string = buffer[randx];
+
+    buffer[randx] = buffer[randy];
+    buffer[randy] = saved;
+  }
+
+  let key: string = '';
+  const namespace: string = options.env.DB_NAME;
+  // len_ran: length of random on the right side of the string.
+  const len_ran: number = LENGTH - (namespace.length + 1); // + 1: underscore on the middle
+
+  for (let i: number = 0; i < len_ran; i++) {
+    key = key + buffer[i];
+  }
+
+  key = namespace + '_' + key;
+
+  let user: Document | null = await options.collections.users.findOne({ api_key: key });
+
+  while (user) {
+    key = '';
+
+    for (let i = 0; i < len_buf; i++) {
+      const randx: number = Math.floor(Math.random() * len_buf);
+      const randy: number = Math.floor(Math.random() * len_buf);
+
+      const saved: string = buffer[randx];
+
+      buffer[randx] = buffer[randy];
+      buffer[randy] = saved;
+    }
+
+    for (let i = 0; i < len_ran; i++) {
+      key = key + buffer[i];
+    }
+
+    key = namespace + '_' + key;
+
+    user = await options.collections.users.findOne({ api_key: key });
+  }
+
+  return key;
+}
+
 export async function create_user_doc(credentials: any, options: any): Promise<any> {
   const email_verification_token: string = await generate_email_verification_token(options);
   const ref_code: string = await generate_ref_code(options);
+  const api_key: string = await generate_api_key(options);
 
   const doc: any = {
-    username: remove_extra_space(credentials.username).toLowerCase(),
+    username: UTILS_COMMON.str_remove_extra_space(credentials.username).toLowerCase(),
     username_changed_at: null,
-    email: remove_extra_space(credentials.email).toLowerCase(),
+    email: UTILS_COMMON.str_remove_extra_space(credentials.email).toLowerCase(),
     password: Crypto.SHA256(credentials.password).toString(),
     email_verified: false,
     email_verification_token,
@@ -455,6 +509,7 @@ export async function create_user_doc(credentials: any, options: any): Promise<a
     img: '',
     ref_code: ref_code,
     ref_from: null,
+    api_key: api_key,
     role: config.roles.user,
     permission: config.permissions.user,
     last_ip: credentials.ip,
@@ -600,6 +655,34 @@ export class MailValidator {
       throw { message: 'User with this email is already exist', code: `${err.section}:${err.type}` };
     }
   }
+
+  async add_subscription_email(credentials: any): Promise<void> {
+    const err = { section: 'mail', type: 'add-subscription-email' };
+
+    if (!credentials.email) {
+      throw { message: "Email  hasn't been provided", code: `${err.section}:${err.type}` };
+    }
+
+    if (typeof credentials.email !== config.types.string) {
+      throw { message: 'Email is in Invalid type', code: `${err.section}:${err.type}` };
+    }
+
+    if (credentials.email.length > 300) {
+      throw { message: 'Email is too long', code: `${err.section}:${err.type}` };
+    }
+
+    if (!validator.isEmail(credentials.email)) {
+      throw { message: 'Email is invalid', code: `${err.section}:${err.type}` };
+    }
+
+    const existing_email: Document | null = await this.collections.subscription_emails.findOne({
+      email: credentials.email,
+    });
+
+    if (existing_email) {
+      throw { message: 'Email already exists', code: `${err.section}:${err.type}` };
+    }
+  }
 }
 
 export function generate_html(type = 'verify-email', payload: any): string {
@@ -665,13 +748,22 @@ export function generate_html(type = 'verify-email', payload: any): string {
   }
 }
 
+export function create_subscription_email_doc(credentials: any): object {
+  const doc: any = {
+    email: UTILS_COMMON.str_remove_extra_space(credentials.email).toLowerCase(),
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  return doc;
+}
+
 /**
  *
  * BLOCKCHAIN UTILS
  *
  *
  */
-
 export class BlockchainValidator {
   private collections: any;
 
@@ -708,5 +800,6 @@ export default {
   create_user_doc,
   MailValidator,
   generate_html,
+  create_subscription_email_doc,
   BlockchainValidator,
 };

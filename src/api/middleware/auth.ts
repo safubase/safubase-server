@@ -22,19 +22,20 @@ export async function is_admin(request: any, options: any): Promise<boolean> {
   }
 
   const session_parts: string[] = session.split('_');
-  const user_id: string = session_parts[0];
-  const ip: string = session_parts[1];
-  const created_at: string = session_parts[2];
 
-  if (Number(created_at) + config.env.SESSION_LIFETIME < Date.now()) {
+  const session_user_id: string = session_parts[0];
+  const session_ip: string = session_parts[1];
+  const session_created_at: string = session_parts[2];
+
+  if (Number(session_created_at) + config.env.SESSION_LIFETIME < Date.now()) {
     return false;
   }
 
-  if (ip !== request.ip) {
+  if (session_ip !== request.ip) {
     return false;
   }
 
-  const user: Document | null = await options.collections.users.findOne({ _id: new ObjectId(user_id) });
+  const user: Document | null = await options.collections.users.findOne({ _id: new ObjectId(session_user_id) });
 
   if (!user) {
     return false;
@@ -67,6 +68,7 @@ export async function is_auth(request: any, options: any): Promise<boolean> {
   }
 
   const sparts: string[] = session.split('_');
+
   const user_id: string = sparts[0];
   const ip: string = sparts[1];
   const time: string = sparts[2];
