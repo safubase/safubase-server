@@ -34,6 +34,10 @@ class AuthService {
   }
 
   async get_profile(credentials: any): Promise<any | null> {
+    if (!credentials.sid) {
+      return null;
+    }
+
     const session: string | null = await this.options.redis.hGet('sessions', credentials.sid);
 
     if (!session) {
