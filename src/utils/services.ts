@@ -4,7 +4,7 @@
 import validator from 'validator';
 import axios from 'axios';
 import Crypto from 'crypto-js';
-import crandom from 'crypto-random-string';
+const crandom = require('crypto-random-string');
 
 // INTERFACES
 import { Document, ObjectId } from 'mongodb';

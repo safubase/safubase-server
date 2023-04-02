@@ -2,9 +2,9 @@
 
 // MODULES
 import Crypto from 'crypto-js';
-import crandom from 'crypto-random-string';
 import ImageKit from 'imagekit';
 import validator from 'validator';
+const crandom = require('crypto-random-string');
 
 // INTERFACES
 import { Document, InsertOneResult, ObjectId } from 'mongodb';
