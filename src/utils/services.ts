@@ -452,7 +452,7 @@ async function generate_api_key(options: any): Promise<string> {
   }
 
   let key: string = '';
-  const namespace: string = options.env.DB_NAME;
+  const namespace: string = config.env.DB_NAME;
   // len_ran: length of random on the right side of the string.
   const len_ran: number = LENGTH - (namespace.length + 1); // + 1: underscore on the middle
 
