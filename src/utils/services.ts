@@ -173,10 +173,9 @@ export class AuthValidator {
   }
 
   async signin(credentials: any): Promise<Document> {
-    const types = config.types;
     const err = { section: 'auth', type: 'signin' };
 
-    if (!credentials || typeof credentials !== types.object) {
+    if (!credentials || typeof credentials !== config.types.object) {
       throw { message: "User credentials hasn't been provided", type: `${err.section}:${err.type}` };
     }
 
@@ -186,7 +185,7 @@ export class AuthValidator {
       throw { message: 'Missing credentials while signing in', type: `${err.section}:${err.type}` };
     }
 
-    if (typeof ip !== types.string || typeof uid !== types.string || typeof password !== types.string) {
+    if (typeof ip !== config.types.string || typeof uid !== config.types.string || typeof password !== config.types.string) {
       throw { message: 'Given credentials are invalid', type: `${err.section}:${err.type}` };
     }
 

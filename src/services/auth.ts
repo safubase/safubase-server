@@ -119,7 +119,7 @@ class AuthService {
   }
 
   async signup(credentials: any): Promise<any> {
-    await this.auth_validator.signup(credentials, this.options);
+    await this.auth_validator.signup(credentials);
 
     const doc = await UTILS_SERVICES.create_user_doc(credentials, this.options);
     const insert_one_result: InsertOneResult = await this.collections.users.insertOne(doc);
@@ -144,7 +144,7 @@ class AuthService {
 
   async signin(credentials: any): Promise<any> {
     // check all the credentials, just a bunch of if statements, all valid if the array is empty.
-    const user: Document = await this.auth_validator.signin(credentials, this.options);
+    const user: Document = await this.auth_validator.signin(credentials);
     /**
      *     
      * 
