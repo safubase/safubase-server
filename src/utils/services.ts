@@ -209,9 +209,8 @@ export class AuthValidator {
   }
 
   async signout(credentials: any): Promise<void> {
-    const types = config.types;
     const err = { section: 'auth', type: 'signout' };
-    const user: Document | null = this.collections.users.findOne({ _id: credentials.user._id });
+    const user: Document | null = await this.options.collections.users.findOne({ _id: credentials.user._id });
 
     if (!user) {
       throw { message: "User couldn't be found", type: `${err.section}:${err.type}` };
