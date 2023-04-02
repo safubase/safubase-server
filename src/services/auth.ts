@@ -4,7 +4,6 @@
 import Crypto from 'crypto-js';
 import ImageKit from 'imagekit';
 import validator from 'validator';
-const crandom = require('crypto-random-string');
 
 // INTERFACES
 import { Document, InsertOneResult, ObjectId } from 'mongodb';
@@ -87,7 +86,7 @@ class AuthService {
       const base64_data: string = base64_buffer[1];
 
       const file_ext: string = base64_type.split('/')[1];
-      const file_name: string = crandom({ length: 32 }) + '.' + file_ext;
+      const file_name: string = UTILS_COMMON.random({ length: 32 }) + '.' + file_ext;
 
       const imagekit_res: UploadResponse = await this.imagekit.upload({ file: base64_data, fileName: file_name });
 

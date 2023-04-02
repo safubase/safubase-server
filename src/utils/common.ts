@@ -92,8 +92,37 @@ export function str_remove_extra_space(str: string): string {
   return '';
 }
 
+export function random({ length = 32, type = 'hex' }): string {
+  let final: string = '';
+  let buffer: string = '';
+
+  if (type === 'hex') {
+    buffer = '0123456789abcdef';
+  }
+
+  if (type === 'url-safe') {
+    buffer = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-';
+  }
+
+  if (type === 'distinguishable') {
+    buffer = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+  }
+
+  if (type === 'numeric') {
+    buffer = '0123456789';
+  }
+
+  for (let i: number = 0; i < length; i++) {
+    const rand = Math.floor(Math.random() * buffer.length);
+    final = final + buffer[rand];
+  }
+
+  return final;
+}
+
 export default {
   remove_extra_space,
   str_remove_extra_space,
   validate_base64,
+  random,
 };

@@ -4,7 +4,6 @@
 import validator from 'validator';
 import axios from 'axios';
 import Crypto from 'crypto-js';
-const crandom = require('crypto-random-string');
 
 // INTERFACES
 import { Document, ObjectId } from 'mongodb';
@@ -387,11 +386,11 @@ export class AuthValidator {
 async function generate_ref_code(options: any): Promise<string> {
   const length: number = 8;
 
-  let code: string = crandom({ length: length, type: 'distinguishable' });
+  let code: string = UTILS_COMMON.random({ length: length, type: 'distinguishable' });
   let user: Document = await options.collections.users.findOne({ ref_code: code });
 
   while (user) {
-    code = crandom({ length: length, type: 'distinguishable' });
+    code = UTILS_COMMON.random({ length: length, type: 'distinguishable' });
     user = await options.collections.users.findOne({ ref_code: code });
   }
 
@@ -400,11 +399,11 @@ async function generate_ref_code(options: any): Promise<string> {
 
 export async function create_session(payload: any, options: any): Promise<string> {
   const redis = options.redis;
-  let sid: string = crandom({ length: 128 });
+  let sid: string = UTILS_COMMON.random({ length: 128 });
   let existing_session: string | null = await redis.hGet('sessions', sid);
 
   while (existing_session) {
-    sid = crandom({ length: 128 });
+    sid = UTILS_COMMON.random({ length: 128 });
     existing_session = await redis.hGet('sessions', sid);
   }
 
@@ -414,11 +413,11 @@ export async function create_session(payload: any, options: any): Promise<string
 }
 
 export async function generate_email_verification_token(options: any): Promise<string> {
-  let token: string = crandom({ length: 128 });
+  let token: string = UTILS_COMMON.random({ length: 128 });
   let user: Document | null = await options.collections.users.findOne({ email_verification_token: token });
 
   while (user) {
-    token = crandom({ length: 128 });
+    token = UTILS_COMMON.random({ length: 128 });
     user = await options.collections.users.findOne({ email_verification_token: token });
   }
 
@@ -426,11 +425,11 @@ export async function generate_email_verification_token(options: any): Promise<s
 }
 
 export async function generate_password_reset_token(options: any): Promise<string> {
-  let token: string = crandom({ length: 128 });
+  let token: string = UTILS_COMMON.random({ length: 128 });
   let user: Document | null = await options.collections.users.findOne({ password_reset_token: token });
 
   while (user) {
-    token = crandom({ length: 128 });
+    token = UTILS_COMMON.random({ length: 128 });
     user = await options.collections.users.findOne({ password_reset_token: token });
   }
 
