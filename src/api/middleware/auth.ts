@@ -81,22 +81,24 @@ export async function is_auth(request: any, options: any): Promise<boolean> {
     return false;
   }
 
-  const promises = await Promise.all([options.collections.users.findOne({ _id: new ObjectId(user_id) }), options.collections.premiums.findOne({ user_id: new ObjectId(user_id) })]);
+  const promises = await Promise.all([options.collections.users.findOne({ _id: new ObjectId(user_id) })]); // options.collections.premiums.findOne({ user_id: new ObjectId(user_id) })
 
   if (!promises) {
     return false;
   }
 
   const user_doc: Document = promises[0];
-  const premium_doc: Document = promises[1];
+  //const premium_doc: Document = promises[1];
 
   if (!user_doc) {
     return false;
   }
 
-  if (premium_doc && premium_doc.expire_at.valueOf() > Date.now() && premium_doc.status === 2) {
+  /**\
+   *   if (premium_doc && premium_doc.expire_at.valueOf() > Date.now() && premium_doc.status === 2) {
     user_doc.premium = true;
   }
+   */
 
   request.user = user_doc;
 
@@ -133,20 +135,21 @@ export async function is_premium(request: any, options: any): Promise<boolean> {
     return false;
   }
 
-  const promises = await Promise.all([options.collections.users.findOne({ _id: new ObjectId(user_id) }), options.collections.premiums.findOne({ userId: new ObjectId(user_id) })]);
+  const promises = await Promise.all([options.collections.users.findOne({ _id: new ObjectId(user_id) })]); // options.collections.premiums.findOne({ userId: new ObjectId(user_id) })
 
   if (!promises) {
     return false;
   }
 
   const user: Document = promises[0];
-  const premium: Document = promises[1];
+  //const premium: Document = promises[1];
 
   if (!user) {
     return false;
   }
 
-  if (!premium) {
+  /**
+   *   if (!premium) {
     return false;
   }
 
@@ -157,6 +160,8 @@ export async function is_premium(request: any, options: any): Promise<boolean> {
   if (premium.status !== 2) {
     return false;
   }
+   * 
+   */
 
   request.user = user;
 
