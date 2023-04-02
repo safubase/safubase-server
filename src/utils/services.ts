@@ -4,9 +4,10 @@
 import validator from 'validator';
 import axios from 'axios';
 import Crypto from 'crypto-js';
+import crandom from 'crypto-random-string';
 
 // INTERFACES
-import { Document } from 'mongodb';
+import { Document, ObjectId } from 'mongodb';
 
 // CONFIG
 import config from '../config';
@@ -385,12 +386,13 @@ export class AuthValidator {
 }
 
 async function generate_ref_code(options: any): Promise<string> {
-  const length: number = 6;
-  let code: string = Crypto.lib.WordArray.random(length).toString().toUpperCase();
+  const length: number = 8;
+
+  let code: string = crandom({ length: length, type: 'distinguishable' });
   let user: Document = await options.collections.users.findOne({ ref_code: code });
 
   while (user) {
-    code = Crypto.lib.WordArray.random(length).toString().toUpperCase();
+    code = crandom({ length: length, type: 'distinguishable' });
     user = await options.collections.users.findOne({ ref_code: code });
   }
 
@@ -399,25 +401,25 @@ async function generate_ref_code(options: any): Promise<string> {
 
 export async function create_session(payload: any, options: any): Promise<string> {
   const redis = options.redis;
-  let sid: string = Crypto.lib.WordArray.random(128).toString();
+  let sid: string = crandom({ length: 128 });
   let existing_session: string | null = await redis.hGet('sessions', sid);
 
   while (existing_session) {
-    sid = Crypto.lib.WordArray.random(128).toString();
+    sid = crandom({ length: 128 });
     existing_session = await redis.hGet('sessions', sid);
   }
 
-  // example session id vaule: 1af904ab_123.34.37.23_123
+  // example session id vaule: 1af904ab_123.34.37.23_937653923
   await redis.hSet('sessions', sid, payload.user_id.toString() + '_' + payload.ip + '_' + Date.now());
   return sid;
 }
 
 export async function generate_email_verification_token(options: any): Promise<string> {
-  let token: string = Crypto.lib.WordArray.random(128).toString();
+  let token: string = crandom({ length: 128 });
   let user: Document | null = await options.collections.users.findOne({ email_verification_token: token });
 
   while (user) {
-    token = Crypto.lib.WordArray.random(128).toString();
+    token = crandom({ length: 128 });
     user = await options.collections.users.findOne({ email_verification_token: token });
   }
 
@@ -425,11 +427,11 @@ export async function generate_email_verification_token(options: any): Promise<s
 }
 
 export async function generate_password_reset_token(options: any): Promise<string> {
-  let token: string = Crypto.lib.WordArray.random(128).toString();
+  let token: string = crandom({ length: 128 });
   let user: Document | null = await options.collections.users.findOne({ password_reset_token: token });
 
   while (user) {
-    token = Crypto.lib.WordArray.random(128).toString();
+    token = crandom({ length: 128 });
     user = await options.collections.users.findOne({ password_reset_token: token });
   }
 
@@ -490,9 +492,12 @@ async function generate_api_key(options: any): Promise<string> {
 }
 
 export async function create_user_doc(credentials: any, options: any): Promise<any> {
-  const email_verification_token: string = await generate_email_verification_token(options);
-  const ref_code: string = await generate_ref_code(options);
-  const api_key: string = await generate_api_key(options);
+  const res = await Promise.all([generate_email_verification_token(options), generate_ref_code(options), generate_api_key(options), options.collections.users.findOne({ ref_code: credentials.ref_code })]);
+
+  const email_verification_token: string = res[0];
+  const ref_code: string = res[1];
+  const api_key: string = res[2];
+  const ref_from: ObjectId | null = res[3] ? res[3]._id : null;
 
   const doc: any = {
     username: UTILS_COMMON.str_remove_extra_space(credentials.username).toLowerCase(),
@@ -506,11 +511,11 @@ export async function create_user_doc(credentials: any, options: any): Promise<a
     password_reset_token_exp_at: null,
     img: '',
     ref_code: ref_code,
-    ref_from: null,
+    ref_from: ref_from,
     api_key: api_key,
     role: config.roles.user,
     permission: config.permissions.user,
-    last_ip: credentials.ip,
+    ip: credentials.ip,
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -696,11 +701,11 @@ export function generate_html(type = 'verify-email', payload: any): string {
         payload.username +
         '</span></div> <div class="p"> Please click the button below to verify your email address. </div> <div class="p subtext"> If you didnt signup to ' +
         config.env.URL_UI +
-        '.com please ignore this email. </div> <div class="p btn-area"> <a href="' +
+        ' please ignore this email. </div> <div class="p btn-area"> <a href="' +
         payload.link +
         '" target="_blank" rel="referrer" class="password-reset-btn" > Verify Email </a> </div> <footer class="footer"> © 2022 ' +
         config.env.URL_UI +
-        '.com | All rights reserved. </footer> </div> </section> </body></html>'
+        ' | All rights reserved. </footer> </div> </section> </body></html>'
       );
 
     case 'reset-password':

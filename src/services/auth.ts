@@ -2,6 +2,7 @@
 
 // MODULES
 import Crypto from 'crypto-js';
+import crandom from 'crypto-random-string';
 import ImageKit from 'imagekit';
 import validator from 'validator';
 
@@ -86,7 +87,7 @@ class AuthService {
       const base64_data: string = base64_buffer[1];
 
       const file_ext: string = base64_type.split('/')[1];
-      const file_name: string = Crypto.lib.WordArray.random(32).toString() + '.' + file_ext;
+      const file_name: string = crandom({ length: 32 }) + '.' + file_ext;
 
       const imagekit_res: UploadResponse = await this.imagekit.upload({ file: base64_data, fileName: file_name });
 
@@ -156,7 +157,7 @@ class AuthService {
      * 
      */
 
-    if (credentials.ip !== user.last_ip && validator.isIP(user.last_ip) && user.last_ip) {
+    if (credentials.ip !== user.ip && validator.isIP(user.ip) && user.ip) {
       const content = {
         subject: `New Login to ${config.env.URL_UI} from:` + credentials.ip,
         html: UTILS_SERVICES.generate_html('new-ip', { username: user.username, ip: credentials.ip }),

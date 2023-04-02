@@ -54,7 +54,7 @@ const schema = {
     permission: {
       enum: [config.permissions.user, config.permissions.admin],
     },
-    last_ip: {
+    ip: {
       bsonType: config.types.string,
     },
     created_at: {
