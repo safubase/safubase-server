@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "safubase API",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "start": "node build/index.js",
     "test": "jest",
