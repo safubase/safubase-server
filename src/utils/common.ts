@@ -38,76 +38,56 @@ export function validate_base64(base64: string, err: any): void {
   }
 }
 
-export function remove_extra_space(str: string, mode: number = 0): string {
+export function remove_extra_space(str: string): string {
   if (!str || typeof str !== config.types.string) {
     return '';
   }
 
-  if (typeof mode === config.types.number) {
-    throw new Error('Invalid mode argument provided in remove_extra_space');
-  }
+  let new_str: string = '';
 
-  if (mode === 0) {
-    let new_str: string = '';
+  for (let i: number = 0; i < str.length; i++) {
+    const current: string = str[i];
+    const next: string | undefined = str[i + 1];
 
-    for (let i: number = 0; i < str.length; i++) {
-      const current: string = str[i];
-      const next: string | undefined = str[i + 1];
-
-      if (current === ' ') {
-        if (next && next !== ' ') {
-          if (new_str.length) {
-            new_str = new_str + current;
-          }
+    if (current === ' ') {
+      if (next && next !== ' ') {
+        if (new_str.length) {
+          new_str = new_str + current;
         }
-      } else {
-        new_str = new_str + current;
       }
+    } else {
+      new_str = new_str + current;
     }
-
-    return new_str;
   }
 
-  if (mode === 1) {
-    return str.replace(/\s/g, ' ');
-  }
+  return new_str;
 
   return '';
 }
 
-export function str_remove_extra_space(str: string, mode: number = 0): string {
+export function str_remove_extra_space(str: string): string {
   if (!str || typeof str !== config.types.string) {
     return '';
   }
 
-  if (typeof mode === config.types.number) {
-    throw new Error('Invalid mode argument provided in remove_extra_space');
-  }
+  let new_str: string = '';
 
-  if (mode === 0) {
-    let new_str: string = '';
+  for (let i: number = 0; i < str.length; i++) {
+    const current: string = str[i];
+    const next: string | undefined = str[i + 1];
 
-    for (let i: number = 0; i < str.length; i++) {
-      const current: string = str[i];
-      const next: string | undefined = str[i + 1];
-
-      if (current === ' ') {
-        if (next && next !== ' ') {
-          if (new_str.length) {
-            new_str = new_str + current;
-          }
+    if (current === ' ') {
+      if (next && next !== ' ') {
+        if (new_str.length) {
+          new_str = new_str + current;
         }
-      } else {
-        new_str = new_str + current;
       }
+    } else {
+      new_str = new_str + current;
     }
-
-    return new_str;
   }
 
-  if (mode === 1) {
-    return str.replace(/\s/g, ' ');
-  }
+  return new_str;
 
   return '';
 }

@@ -93,7 +93,7 @@ class MailService {
 
   // Generates a password reset token, updated users password reset token in the database, sends the reset link to users email
   async send_password_reset_link(email: string): Promise<void> {
-    const user: Document = await this.mail_validator.send_password_reset_link(email, this.options);
+    const user: Document = await this.mail_validator.send_password_reset_link(email);
     const endpoint: string = config.endpoints.auth_reset_password.split(':')[0];
     const token: string = await UTILS_SERVICES.generate_password_reset_token(this.options);
 

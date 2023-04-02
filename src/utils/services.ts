@@ -84,7 +84,6 @@ export class AuthValidator {
   }
 
   async signup(credentials: any): Promise<void> {
-    const captcha_secret_key: string = config.env.SECRET_KEY_CAPTCHA;
     const types = config.types;
     const err = { section: 'auth', type: 'signup' };
 
@@ -156,7 +155,7 @@ export class AuthValidator {
       throw { message: 'User with the given credentials is already exists', type: `${err.section}:${err.type}` };
     }
 
-    const captcha_body: string = 'response=' + captcha_token + '&secret=' + captcha_secret_key;
+    const captcha_body: string = 'response=' + captcha_token + '&secret=' + config.env.SECRET_KEY_CAPTCHA;
     const catpcha_response: any = await axios.post('https://hcaptcha.com/siteverify', captcha_body, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -596,14 +595,13 @@ export class MailValidator {
   }
 
   async send_password_reset_link(email: string): Promise<Document> {
-    const types = config.types;
     const err = { section: 'mail', type: 'send-password-reset-link' };
 
     if (!email) {
       throw { message: "Email  hasn't been provided", code: `${err.section}:${err.type}` };
     }
 
-    if (typeof email !== types.string) {
+    if (typeof email !== config.types.string) {
       throw { message: 'Email is in Invalid type', code: `${err.section}:${err.type}` };
     }
 
