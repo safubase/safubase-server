@@ -48,7 +48,11 @@ class BlockchainService {
   }
 
   async audit(credentials: any): Promise<void> {
-    console.log('ahnan');
+    await this.blockchain_validator.audit(credentials);
+
+    const res = await axios.get('https://api.gopluslabs.io/api/v1/token_security/' + credentials.chain_id + '?contract_addresses=' + credentials.address);
+
+    return res.data;
   }
 }
 

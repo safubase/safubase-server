@@ -61,14 +61,22 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
     audit: {
       method: 'GET',
       url: '/v1' + config.endpoints.blockchain_audit,
+      schema: {
+        querystring: {
+          chain_id: { type: 'string' },
+        },
+      },
       preValidation: mw.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
-        console.log(request.params.token, request.query);
+        const credentials = {
+          address: request.params.token,
+          chain_id: request.query.chain_id,
+        };
 
         try {
-          //const result = await options.services.blockchain.audit(credentials);
+          const result = await options.services.blockchain.audit(credentials);
 
-          reply.send({});
+          reply.send(result);
         } catch (error) {
           reply.status(422).send(error);
         }

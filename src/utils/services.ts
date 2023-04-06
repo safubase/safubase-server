@@ -798,6 +798,26 @@ export class BlockchainValidator {
       throw { message: "Blockchain Credentials hasn't been provided", type: `${err.section}:${err.type}` };
     }
   }
+
+  async audit(credentials: any): Promise<void> {
+    const err = { section: 'blockchain', type: 'audit' };
+
+    if (!credentials) {
+      throw { message: "Audit credentials hasn't been provided", type: `${err.section}:${err.type}` };
+    }
+
+    if (!credentials.address || !credentials.chain_id) {
+      throw { message: "Audit credentials hasn't been provided", type: `${err.section}:${err.type}` };
+    }
+
+    if (typeof credentials.address !== config.types.string || typeof credentials.chain_id !== config.types.string) {
+      throw { message: 'Audit credentials are in invalid type', type: `${err.section}:${err.type}` };
+    }
+
+    if (!Number(credentials.chain_id)) {
+      throw { message: 'Chain id is in invalid type', type: `${err.section}:${err.type}` };
+    }
+  }
 }
 
 export default {
