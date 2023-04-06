@@ -87,6 +87,7 @@ const config: IConfig = {
 
     blockchain_whales: '/blockchain/whales',
     blockchain_upcoming_unlocks: '/blockchain/upcoming-unlocks',
+    blockchain_audit: '/blockchain/audit/:token',
   },
 };
 

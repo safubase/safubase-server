@@ -18,6 +18,19 @@ async function init(): Promise<void> {
   await server.listen({ port: Number(config.env.PORT), host: config.env.HOST });
 
   console.log(`🛡️ Server listening on port: ${config.env.PORT} 🛡️`);
+
+  const obj1 = {};
+  const obj1_ref = obj1;
+
+  if (obj1 === obj1_ref) {
+    console.log('same');
+  }
+
+  const obj2 = {};
+
+  if (obj1 !== obj2) {
+    console.log('not same');
+  }
 }
 
 init();

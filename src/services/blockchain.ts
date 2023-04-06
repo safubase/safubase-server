@@ -46,6 +46,10 @@ class BlockchainService {
 
     return res.data;
   }
+
+  async audit(credentials: any): Promise<void> {
+    console.log('ahnan');
+  }
 }
 
 export default BlockchainService;

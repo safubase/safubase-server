@@ -124,6 +124,7 @@ class AuthService {
     const doc = await UTILS_SERVICES.create_user_doc(credentials, this.options);
     const insert_one_result: InsertOneResult = await this.collections.users.insertOne(doc);
     const sid: string = await UTILS_SERVICES.create_session({ user_id: insert_one_result.insertedId.toString(), ip: credentials.ip }, this.options);
+
     const profile = {
       _id: insert_one_result.insertedId,
       email: doc.email,
@@ -312,5 +313,3 @@ class AuthService {
 }
 
 export default AuthService;
-
-//test

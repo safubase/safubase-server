@@ -500,20 +500,28 @@ export async function create_user_doc(credentials: any, options: any): Promise<a
   const doc: any = {
     username: UTILS_COMMON.str_remove_extra_space(credentials.username).toLowerCase(),
     username_changed_at: null,
+
     email: UTILS_COMMON.str_remove_extra_space(credentials.email).toLowerCase(),
-    password: Crypto.SHA256(credentials.password).toString(),
     email_verified: false,
     email_verification_token,
     email_verification_token_exp_at: new Date(Date.now() + config.times.one_hour_ms * 24),
+
+    password: Crypto.SHA256(credentials.password).toString(),
     password_reset_token: null,
     password_reset_token_exp_at: null,
-    img: '',
-    ref_code: ref_code,
-    ref_from: ref_from,
-    api_key: api_key,
+
     role: config.roles.user,
     permission: config.permissions.user,
+
+    img: '',
+
+    ref_code: ref_code,
+    ref_from: ref_from,
+
+    api_key: api_key,
+
     ip: credentials.ip,
+
     created_at: new Date(),
     updated_at: new Date(),
   };

@@ -65,6 +65,7 @@ export function remove_extra_space(str: string): string {
   return '';
 }
 
+//     "  a    bc d" => "a bc d"
 export function str_remove_extra_space(str: string): string {
   if (!str || typeof str !== config.types.string) {
     return '';
@@ -105,7 +106,7 @@ export function random({ length = 32, type = 'hex' }): string {
   }
 
   if (type === 'distinguishable') {
-    buffer = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+    buffer = 'QWERTYUIOPASDFGHJKLZXCVBNM0123456789';
   }
 
   if (type === 'numeric') {
@@ -126,5 +127,3 @@ export default {
   validate_base64,
   random,
 };
-
-//test

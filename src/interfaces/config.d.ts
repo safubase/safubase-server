@@ -72,6 +72,7 @@ export default interface Config_i {
 
     readonly blockchain_whales: string;
     readonly blockchain_upcoming_unlocks: string;
+    readonly blockchain_audit: string;
   };
 }
 
@@ -146,5 +147,6 @@ export default interface IConfig {
 
     readonly blockchain_whales: string;
     readonly blockchain_upcoming_unlocks: string;
+    readonly blockchain_audit: string;
   };
 }

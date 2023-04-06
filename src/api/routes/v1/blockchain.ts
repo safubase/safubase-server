@@ -43,11 +43,6 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
     get_upcoming_unlocks: {
       method: 'GET',
       url: '/v1' + config.endpoints.blockchain_upcoming_unlocks,
-      schema: {
-        querystring: {
-          chain: { type: 'string' },
-        },
-      },
       preValidation: mw.prevalidation(null, options),
       handler: async function (request: any, reply: any) {
         const credentials = {
@@ -58,6 +53,22 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
           const result = await options.services.blockchain.get_upcoming_unlocks(credentials);
 
           reply.send(result);
+        } catch (error) {
+          reply.status(422).send(error);
+        }
+      },
+    },
+    audit: {
+      method: 'GET',
+      url: '/v1' + config.endpoints.blockchain_audit,
+      preValidation: mw.prevalidation(null, options),
+      handler: async function (request: any, reply: any) {
+        console.log(request.params.token, request.query);
+
+        try {
+          //const result = await options.services.blockchain.audit(credentials);
+
+          reply.send({});
         } catch (error) {
           reply.status(422).send(error);
         }
