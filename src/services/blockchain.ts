@@ -49,6 +49,43 @@ class BlockchainService {
 
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
+    let score = 0;
+    let inc = 12.5;
+
+    if (result.is_anti_whale === "1") {
+      score = score + inc;
+    }
+
+    if (result.is_blacklisted === "0") {
+      score = score + inc;
+    }
+
+    if (result.is_honeypot === "0") {
+      score = score + inc;
+    }
+
+    if (result.is_in_dex === "1") {
+      score = score + inc;
+    }
+
+    if (result.is_mintable === "0") {
+      score = score + inc;
+    }
+
+    if (result.is_open_source === "1") {
+      score = score + inc;
+    }
+
+    if (result.is_proxy === "0") {
+      score = score + inc;
+    }
+
+    if (result.is_whitelisted === "0") {
+      score = score + inc;
+    }
+
+    result.score = score;
+
     return result;
   }
 }
