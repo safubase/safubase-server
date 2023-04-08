@@ -820,8 +820,12 @@ export class BlockchainValidator {
 
     const res = await axios.get('https://api.gopluslabs.io/api/v1/token_security/' + credentials.chain_id + '?contract_addresses=' + credentials.address);
 
+    if (!res.data.result) {
+      throw { message: 'Chain id or address might be insufficient', type: `${err.section}:${err.type}` };
+    }
+
     if (!res.data.result[credentials.address.toLowerCase()]) {
-      throw { message: 'Chain id might be insufficient', type: `${err.section}:${err.type}` };
+      throw { message: 'Chain id or address might be insufficient', type: `${err.section}:${err.type}` };
     }
 
     return res.data.result[credentials.address.toLowerCase()];
