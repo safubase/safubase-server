@@ -16,7 +16,7 @@ import config from '../config';
 // UTILS
 import UTILS_SERVICES from '../utils/services';
 
-class BlockchainService {
+class ServiceBlokchain {
   private options: any;
   private collections: any;
   private blockchain_validator: any;
@@ -49,39 +49,63 @@ class BlockchainService {
 
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
-    let score = 0;
-    let inc = 12.5;
+    let score: number = 0; // overall score for the current crypto
+    let inc: number = 12.5; // score incrementer
+    let failed: string = "";
+    let warnings: string = "";
+    let passed: string = "";
 
+    /**
+     * 
+     * IF blocks are positive for score ande ELSE blocks are for fails
+     * 
+     */
     if (result.is_anti_whale === "1") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_blacklisted === "0") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_honeypot === "0") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_in_dex === "1") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_mintable === "0") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_open_source === "1") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_proxy === "0") {
       score = score + inc;
+    } else {
+
     }
 
     if (result.is_whitelisted === "0") {
       score = score + inc;
+    } else {
+
     }
 
     result.score = score;
@@ -90,4 +114,4 @@ class BlockchainService {
   }
 }
 
-export default BlockchainService;
+export default ServiceBlokchain;
