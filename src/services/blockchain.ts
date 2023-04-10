@@ -164,7 +164,9 @@ class ServiceBlokchain {
       await this.options.redis.hSet('audits', result.address, JSON.stringify(result));
     }
 
-    console.log(audits);
+    for (let i: number = 0; i < audits.length; i++) {
+      console.log(audits[i].created_at);
+    }
 
     return result;
   }
