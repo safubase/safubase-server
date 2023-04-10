@@ -50,6 +50,8 @@ class ServiceBlokchain {
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
 
+    console.log(result);
+
     let score: number = 0; // overall score for the current crypto
     let inc: number = 12.5; // score incrementer
     let failed: string = '';
@@ -165,10 +167,6 @@ class ServiceBlokchain {
       }
     } else {
       await this.options.redis.hSet('audits', result.address, JSON.stringify(result));
-    }
-
-    for (let i: number = 0; i < audits.length; i++) {
-      console.log(audits[i].created_at);
     }
 
     return result;
