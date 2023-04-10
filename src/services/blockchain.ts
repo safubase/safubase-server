@@ -6,7 +6,7 @@ import ImageKit from 'imagekit';
 import validator from 'validator';
 import axios from 'axios';
 import Moralis from 'moralis';
-import { EvmChain } from '@moralisweb3/evm-utils';
+import { EvmChain } from '@moralisweb3/common-evm-utils';
 
 // INTERFACES
 import { Document, InsertOneResult, ObjectId } from 'mongodb';
