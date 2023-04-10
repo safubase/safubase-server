@@ -50,8 +50,6 @@ class ServiceBlokchain {
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
 
-    console.log(result);
-
     let score: number = 0; // overall score for the current crypto
     let inc: number = 12.5; // score incrementer
     let failed: string = '';
@@ -86,11 +84,13 @@ class ServiceBlokchain {
     if (result.is_mintable === '0') {
       score = score + inc;
     } else {
+      warnings = warnings ? '_Owner can mint the token' : 'Owner can mint the token';
     }
 
     if (result.is_open_source === '1') {
       score = score + inc;
     } else {
+      failed = failed ? '_Failed the some' : 'Failed the some';
     }
 
     if (result.is_proxy === '0') {
@@ -103,6 +103,7 @@ class ServiceBlokchain {
     } else {
     }
 
+    result.chain_id = credentials.chain_id;
     result.score = score;
     result.failed = failed;
     result.warnings = warnings;
