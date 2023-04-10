@@ -69,7 +69,7 @@ class ServiceBlokchain {
       chain: chains[credentials.chain_id],
     });
 
-    console.log(api_res_moralis.data);
+    console.log(api_res_moralis[0]);
 
     /**
      *
