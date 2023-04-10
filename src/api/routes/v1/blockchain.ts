@@ -82,6 +82,31 @@ function bind_blockchain_routes(server: FastifyInstance, options: any): FastifyI
         }
       },
     },
+    audits: {
+      method: 'GET',
+      url: '/v1' + config.endpoints.blockchain_audits,
+      schema: {
+        querystring: {
+          limit: { type: config.types.string },
+          latest: { type: config.types.string },
+        },
+      },
+      preValidation: mw.prevalidation(null, options),
+      handler: async function (request: any, reply: any) {
+        const credentials = {
+          limit: request.query.limit,
+          latest: request.query.latest,
+        };
+
+        try {
+          const result = await options.services.blockchain.get_audits(credentials);
+
+          reply.send(result);
+        } catch (error) {
+          reply.status(422).send(error);
+        }
+      },
+    },
   };
 
   const allRoutes: any[] = Object.values(routes);

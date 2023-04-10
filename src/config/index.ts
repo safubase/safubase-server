@@ -34,6 +34,7 @@ const config: IConfig = {
     IMAGEKIT_PRIVATE_KEY: process.env.IMAGEKIT_PRIVATE_KEY || '',
     IMAGEKIT_ID: process.env.IMAGEKIT_ID || '',
     SECRET_KEY_CAPTCHA: process.env.SECRET_KEY_CAPTCHA || '',
+    API_KEY_MORALIS: process.env.API_KEY_MORALIS || '',
   },
   roles: {
     admin: 'admin',
@@ -87,7 +88,8 @@ const config: IConfig = {
 
     blockchain_whales: '/blockchain/whales',
     blockchain_upcoming_unlocks: '/blockchain/upcoming-unlocks',
-    blockchain_audit: '/blockchain/audit/:token',
+    blockchain_audit: '/blockchain/audits/:token',
+    blockchain_audits: '/blockchain/audits',
   },
 };
 

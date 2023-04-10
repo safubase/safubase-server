@@ -5,6 +5,8 @@ import Crypto from 'crypto-js';
 import ImageKit from 'imagekit';
 import validator from 'validator';
 import axios from 'axios';
+import Moralis from 'moralis';
+import { EvmChain } from '@moralisweb3/evm-utils';
 
 // INTERFACES
 import { Document, InsertOneResult, ObjectId } from 'mongodb';
@@ -26,6 +28,8 @@ class ServiceBlokchain {
     this.options = options;
     this.collections = options.collections;
     this.blockchain_validator = new UTILS_SERVICES.BlockchainValidator(options);
+
+    Moralis.start({ apiKey: config.env.API_KEY_MORALIS });
   }
 
   async get_whales(credentials: any) {
@@ -49,69 +53,78 @@ class ServiceBlokchain {
 
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
+    const chains: any = {
+      '56': EvmChain.BSC,
+      '1': EvmChain.ETHEREUM,
+    };
+
     let score: number = 0; // overall score for the current crypto
     let inc: number = 12.5; // score incrementer
-    let failed: string = "";
-    let warnings: string = "";
-    let passed: string = "";
+    let failed: string = '';
+    let warnings: string = '';
+    let passed: string = '';
+
+    const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
+      addresses: [credentials.address],
+      chain: chains[credentials.chain_id],
+    });
+
+    console.log(api_res_moralis);
 
     /**
-     * 
+     *
      * IF blocks are positive for score ande ELSE blocks are for fails
-     * 
+     *
      */
-    if (result.is_anti_whale === "1") {
+    if (result.is_anti_whale === '1') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_blacklisted === "0") {
+    if (result.is_blacklisted === '0') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_honeypot === "0") {
+    if (result.is_honeypot === '0') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_in_dex === "1") {
+    if (result.is_in_dex === '1') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_mintable === "0") {
+    if (result.is_mintable === '0') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_open_source === "1") {
+    if (result.is_open_source === '1') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_proxy === "0") {
+    if (result.is_proxy === '0') {
       score = score + inc;
     } else {
-
     }
 
-    if (result.is_whitelisted === "0") {
+    if (result.is_whitelisted === '0') {
       score = score + inc;
     } else {
-
     }
 
     result.score = score;
+    result.failed = failed;
+    result.warnings = warnings;
+    result.passed = passed;
 
     return result;
   }
+
+  async get_audits(credentials: any): Promise<void> {}
 }
 
 export default ServiceBlokchain;

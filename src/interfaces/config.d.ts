@@ -20,6 +20,7 @@ export default interface Config_i {
     readonly IMAGEKIT_PRIVATE_KEY: string;
     readonly IMAGEKIT_ID: string;
     readonly SECRET_KEY_CAPTCHA: string;
+    readonly API_KEY_MORALIS: string;
   };
   readonly roles: {
     readonly admin: TRoles;
@@ -73,6 +74,7 @@ export default interface Config_i {
     readonly blockchain_whales: string;
     readonly blockchain_upcoming_unlocks: string;
     readonly blockchain_audit: string;
+    readonly blockchain_audits: string;
   };
 }
 
@@ -96,6 +98,7 @@ export default interface IConfig {
     readonly IMAGEKIT_PRIVATE_KEY: string;
     readonly IMAGEKIT_ID: string;
     readonly SECRET_KEY_CAPTCHA: string;
+    readonly API_KEY_MORALIS: string;
   };
   readonly roles: {
     readonly admin: TRoles;
@@ -148,5 +151,6 @@ export default interface IConfig {
     readonly blockchain_whales: string;
     readonly blockchain_upcoming_unlocks: string;
     readonly blockchain_audit: string;
+    readonly blockchain_audits: string;
   };
 }
