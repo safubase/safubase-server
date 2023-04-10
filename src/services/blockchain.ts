@@ -64,12 +64,12 @@ class ServiceBlokchain {
     let warnings: string = '';
     let passed: string = '';
 
-    const api_res_moralis: any = await Moralis.EvmApi.token.getTokenMetadata({
+    const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
       addresses: [credentials.address],
       chain: chains[credentials.chain_id],
     });
 
-    console.log(api_res_moralis[0]);
+    console.log(api_res_moralis.result);
 
     /**
      *
