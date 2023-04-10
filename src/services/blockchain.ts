@@ -8,10 +8,6 @@ import axios from 'axios';
 import Moralis from 'moralis';
 import { EvmChain } from '@moralisweb3/common-evm-utils';
 
-// INTERFACES
-import { Document, InsertOneResult, ObjectId } from 'mongodb';
-import { UploadResponse } from 'imagekit/dist/libs/interfaces';
-
 // CONFIG
 import config from '../config';
 
@@ -53,23 +49,27 @@ class ServiceBlokchain {
 
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
-    const chains: any = {
-      '56': EvmChain.BSC,
-      '1': EvmChain.ETHEREUM,
-    };
+
+    /**
+     * MORALIS data
+     */
+    const chains: any = { '56': EvmChain.BSC, '1': EvmChain.ETHEREUM };
+    const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
+      addresses: [credentials.address],
+      chain: chains[credentials.chain_id],
+    });
+    const metadata: any = api_res_moralis.toJSON()[0];
+
+    // Map all props and values of metadata to result
+    for (const key in metadata) {
+      result[key] = metadata[key];
+    }
 
     let score: number = 0; // overall score for the current crypto
     let inc: number = 12.5; // score incrementer
     let failed: string = '';
     let warnings: string = '';
     let passed: string = '';
-
-    const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
-      addresses: [credentials.address],
-      chain: chains[credentials.chain_id],
-    });
-
-    console.log(api_res_moralis.toJSON());
 
     /**
      *
@@ -120,6 +120,19 @@ class ServiceBlokchain {
     result.failed = failed;
     result.warnings = warnings;
     result.passed = passed;
+    result.created_at = new Date();
+
+    /**
+     *
+     * REDIS section
+     *
+     */
+    const audits: any[] = await this.options.redis.hGetAll('audits');
+
+    console.log(audits);
+
+    const result_str: string = JSON.stringify({ ...result });
+    await this.options.redis.hSet('audits', result.address, result_str);
 
     return result;
   }
