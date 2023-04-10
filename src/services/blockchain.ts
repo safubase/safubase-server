@@ -124,12 +124,15 @@ class ServiceBlokchain {
       result[key] = metadata[key];
     }
 
+    // Override the moralis created_at
+    result.created_at = new Date();
+
     /**
      *
      * REDIS section
      *
      **/
-    const audits_hash: any[] = await this.options.redis.hGetAll('audits');
+    const audits_hash: any = await this.options.redis.hGetAll('audits');
     const audits: any[] = [];
 
     for (const key in audits_hash) {
