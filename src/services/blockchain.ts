@@ -50,21 +50,6 @@ class ServiceBlokchain {
   async audit(credentials: any): Promise<void> {
     const result = await this.blockchain_validator.audit(credentials);
 
-    /**
-     * MORALIS data
-     */
-    const chains: any = { '56': EvmChain.BSC, '1': EvmChain.ETHEREUM };
-    const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
-      addresses: [credentials.address],
-      chain: chains[credentials.chain_id],
-    });
-    const metadata: any = api_res_moralis.toJSON()[0];
-
-    // Map all props and values of metadata to result
-    for (const key in metadata) {
-      result[key] = metadata[key];
-    }
-
     let score: number = 0; // overall score for the current crypto
     let inc: number = 12.5; // score incrementer
     let failed: string = '';
@@ -124,20 +109,76 @@ class ServiceBlokchain {
 
     /**
      *
-     * REDIS section
+     * MORALIS data
      *
      */
-    const audits: any[] = await this.options.redis.hGetAll('audits');
+    const chains: any = { '56': EvmChain.BSC, '1': EvmChain.ETHEREUM };
+    const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
+      addresses: [credentials.address],
+      chain: chains[credentials.chain_id],
+    });
+    const metadata: any = api_res_moralis.toJSON()[0];
+
+    // Map all props and values of metadata to result
+    for (const key in metadata) {
+      result[key] = metadata[key];
+    }
+
+    /**
+     *
+     * REDIS section
+     *
+     **/
+    const audits_hash: any[] = await this.options.redis.hGetAll('audits');
+    const audits: any[] = [];
+
+    for (const key in audits_hash) {
+      audits.push(JSON.parse(audits_hash[key]));
+    }
+
+    for (let i: number = 0; i < audits.length; i++) {
+      for (let j: number = 0; j < audits.length; j++) {
+        if (audits[j + 1]) {
+          const current = audits[j];
+          const next = audits[j + 1];
+
+          if (new Date(current.created_at).valueOf() < new Date(next.created_at).valueOf()) {
+            audits[j] = next;
+            audits[j + 1] = current;
+          }
+        }
+      }
+    }
+
+    if (audits.length > 10) {
+      audits.length = 10;
+
+      for (const key in audits_hash) {
+        await this.options.redis.hDel('audits', key);
+      }
+
+      for (let i: number = 0; i < audits.length; i++) {
+        this.options.redis.hSet('audits', audits[i].address, JSON.stringify(audits[i]));
+      }
+    } else {
+      await this.options.redis.hSet('audits', result.address, JSON.stringify(result));
+    }
 
     console.log(audits);
-
-    const result_str: string = JSON.stringify({ ...result });
-    await this.options.redis.hSet('audits', result.address, result_str);
 
     return result;
   }
 
-  async get_audits(credentials: any): Promise<void> {}
+  async get_audits(credentials: any): Promise<object[]> {
+    const audits_hash = await this.options.redis.hGetAll('audits');
+    const audits = [];
+
+    for (const key in audits_hash) {
+      audits.push(JSON.parse(audits_hash[key]));
+    }
+
+    return audits;
+  }
 }
 
 export default ServiceBlokchain;

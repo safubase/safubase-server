@@ -7,11 +7,10 @@ async function load_redis(options: any) {
   const client = createClient();
 
   client.on('error', (err: any) => {
-    throw new Error(err);
+    throw err;
   });
 
   await client.connect();
-
   await client.hSet('settings', 'test', '1');
 
   options.redis = client;
