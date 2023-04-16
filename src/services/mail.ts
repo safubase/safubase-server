@@ -127,16 +127,15 @@ class MailService {
   async send_emails(credentials: any): Promise<void> {
     for (let i: number = 0; i < credentials.emails.length; i++) {
       const data: object = {
-        from: credentials.content.from || config.env.EMAIL_NO_REPLY_USERNAME,
+        from: credentials.from || config.env.EMAIL_NO_REPLY_USERNAME,
         to: credentials.emails[i], // to property represents the emails that will be sent emails to.
-        subject: credentials.content.subject,
-        html: credentials.content.html,
+        subject: credentials.subject,
+        html: credentials.html,
       };
 
       this.transporter.sendMail(data, (err: any, info: any) => {
         if (err) {
           console.log(err);
-          console.error(err);
         }
       });
     }

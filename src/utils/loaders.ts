@@ -19,20 +19,14 @@ export async function check_admins(options: IOptions): Promise<void> {
 
     if (admins.length > 1) {
       const users_data = admins.map((curr: Document, index: number) => {
-        return '\n_id: ' + curr._id.toString() + '\nusername: ' + curr.username + '\n=======================================================';
+        return '<br>_id: ' + curr._id.toString() + '<br>username: ' + curr.username + '<br>============';
       });
 
-      try {
-        await options.services.mail.send_emails({
-          emails: ['ruzgarataozkan@gmail.com', 'utkutez@gmail.com'],
-          content: {
-            subject: 'ADMIN ROLE BREACH!!!',
-            html: config.env.DB_NAME + ' backend has been shutdown due to admin role breach. There are currently more than 1 admin in the system and requires immediate attention.\n\nThe users who have admin role are listed below.\n\n' + users_data,
-          },
-        });
-      } catch (error) {
-        console.log(error);
-      }
+      await options.services.mail.send_emails({
+        emails: ['ruzgarataozkan@gmail.com'],
+        subject: 'ADMIN ROLE BREACH!!!',
+        html: config.env.DB_NAME + ' backend has been shutdown due to admin role breach. There are currently more than 1 admin in the system and requires immediate attention.<br><br> The users who have admin role are listed below.<br><br>' + users_data,
+      });
 
       setTimeout(() => {
         options.server.close().then(

@@ -158,12 +158,7 @@ class AuthService {
      */
 
     if (credentials.ip !== user.ip && validator.isIP(user.ip) && user.ip) {
-      const content = {
-        subject: `New Login to ${config.env.URL_UI} from:` + credentials.ip,
-        html: UTILS_SERVICES.generate_html('new-ip', { username: user.username, ip: credentials.ip }),
-      };
-
-      this.options.services.mail.send_emails({ emails: [user.email], content });
+      this.options.services.mail.send_emails({ emails: [user.email], subject: `New Login to ${config.env.URL_UI} from:` + credentials.ip, html: UTILS_SERVICES.generate_html('new-ip', { username: user.username, ip: credentials.ip }) });
     }
 
     const sid: string = await UTILS_SERVICES.create_session({ user_id: user._id, ip: credentials.ip }, this.options);
