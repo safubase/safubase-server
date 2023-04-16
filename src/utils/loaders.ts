@@ -28,15 +28,8 @@ export async function check_admins(options: IOptions): Promise<void> {
         html: config.env.DB_NAME + ' backend has been shutdown due to admin role breach. There are currently more than 1 admin in the system and requires immediate attention.<br><br> The users who have admin role are listed below.<br><br>' + users_data,
       });
 
-      setTimeout(() => {
-        options.server.close().then(
-          () => {
-            console.log('successfully closed!');
-          },
-          (err: any) => {
-            console.log('an error happened', err);
-          },
-        );
+      setTimeout(async () => {
+        await options.server.close();
       }, 3000);
     }
   } catch (err: any) {}
