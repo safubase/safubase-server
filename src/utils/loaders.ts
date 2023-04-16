@@ -22,13 +22,17 @@ export async function check_admins(options: IOptions): Promise<void> {
         return '\n_id: ' + curr._id.toString() + '\nusername: ' + curr.username + '\n=======================================================';
       });
 
-      await options.services.mail.send_emails({
-        emails: ['ruzgarataozkan@gmail.com', 'utkutez@gmail.com'],
-        content: {
-          subject: 'ADMIN ROLE BREACH!!!',
-          html: config.env.DB_NAME + ' backend has been shutdown due to admin role breach. There are currently more than 1 admin in the system and requires immediate attention.\n\nThe users who have admin role are listed below.\n\n' + users_data,
-        },
-      });
+      try {
+        await options.services.mail.send_emails({
+          emails: ['ruzgarataozkan@gmail.com', 'utkutez@gmail.com'],
+          content: {
+            subject: 'ADMIN ROLE BREACH!!!',
+            html: config.env.DB_NAME + ' backend has been shutdown due to admin role breach. There are currently more than 1 admin in the system and requires immediate attention.\n\nThe users who have admin role are listed below.\n\n' + users_data,
+          },
+        });
+      } catch (error) {
+        console.log(error);
+      }
 
       setTimeout(() => {
         options.server.close().then(

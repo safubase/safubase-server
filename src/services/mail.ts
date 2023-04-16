@@ -135,6 +135,7 @@ class MailService {
 
       this.transporter.sendMail(data, (err: any, info: any) => {
         if (err) {
+          console.log(err);
           console.error(err);
         }
       });
