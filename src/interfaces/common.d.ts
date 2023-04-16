@@ -3,6 +3,7 @@ export default interface IOptions {
   collections: any;
   redis: any;
   services: any;
+  server: any;
 }
 
 export default interface Options_i {
@@ -10,4 +11,5 @@ export default interface Options_i {
   collections: any;
   redis: any;
   services: any;
+  server: any;
 }

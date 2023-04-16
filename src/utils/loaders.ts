@@ -30,7 +30,18 @@ export async function check_admins(options: IOptions): Promise<void> {
         },
       });
 
-      process.exit(1);
+      setTimeout(() => {
+        options.server.close().then(
+          () => {
+            console.log('successfully closed!');
+          },
+          (err: any) => {
+            console.log('an error happened', err);
+          },
+        );
+
+        process.abort();
+      }, 2000);
     }
   } catch (err: any) {}
 }

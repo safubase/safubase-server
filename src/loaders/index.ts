@@ -21,6 +21,7 @@ async function load_server(): Promise<FastifyInstance> {
     collections: {},
     redis: {},
     services: {},
+    server: {},
   };
 
   // ORDER OF LOADER COMPONENTS ARE IMPORTANT

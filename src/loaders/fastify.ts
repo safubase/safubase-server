@@ -43,6 +43,9 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
 
   bind_routes(server, options);
 
+  // Inject server instance to dependencies object
+  options.server = server;
+
   return server;
 }
 

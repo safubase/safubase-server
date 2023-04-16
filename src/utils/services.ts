@@ -437,56 +437,45 @@ export async function generate_password_reset_token(options: any): Promise<strin
 }
 
 async function generate_api_key(options: any): Promise<string> {
-  const LENGTH: number = 40;
-  const buffer: string[] = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890'.split('');
-  const len_buf: number = buffer.length;
+  const LENGTH: number = 40; // safubase_123cdD893dS679sdd
+  const BUFFER: string[] = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890'.split('');
 
   // mix the chars in buffer
-  for (let i: number = 0; i < len_buf; i++) {
-    const randx: number = Math.floor(Math.random() * len_buf);
-    const randy: number = Math.floor(Math.random() * len_buf);
-    const saved: string = buffer[randx];
+  for (let i: number = 0; i < BUFFER.length; i++) {
+    const randx: number = Math.floor(Math.random() * BUFFER.length);
+    const randy: number = Math.floor(Math.random() * BUFFER.length);
+    const saved: string = BUFFER[randx];
 
-    buffer[randx] = buffer[randy];
-    buffer[randy] = saved;
+    BUFFER[randx] = BUFFER[randy];
+    BUFFER[randy] = saved;
   }
 
-  let key: string = '';
   const namespace: string = config.env.DB_NAME;
   // len_ran: length of random on the right side of the string.
-  const len_ran: number = LENGTH - (namespace.length + 1); // + 1: underscore on the middle
 
-  for (let i: number = 0; i < len_ran; i++) {
-    key = key + buffer[i];
+  const random_len: number = LENGTH - (namespace.length + 1); // + 1: underscore on the middle
+  let random: string = '';
+
+  for (let i: number = 0; i < random_len; i++) {
+    random = random + BUFFER[Math.floor(Math.random() * BUFFER.length)];
   }
 
-  key = namespace + '_' + key;
-
-  let user: Document | null = await options.collections.users.findOne({ api_key: key });
+  let final: string = namespace + '_' + random;
+  let user: Document | null = await options.collections.users.findOne({ api_key: final });
 
   while (user) {
-    key = '';
+    random = '';
 
-    for (let i = 0; i < len_buf; i++) {
-      const randx: number = Math.floor(Math.random() * len_buf);
-      const randy: number = Math.floor(Math.random() * len_buf);
-
-      const saved: string = buffer[randx];
-
-      buffer[randx] = buffer[randy];
-      buffer[randy] = saved;
+    for (let i = 0; i < random_len; i++) {
+      random = random + BUFFER[Math.floor(Math.random() * BUFFER.length)];
     }
 
-    for (let i = 0; i < len_ran; i++) {
-      key = key + buffer[i];
-    }
+    final = namespace + '_' + random;
 
-    key = namespace + '_' + key;
-
-    user = await options.collections.users.findOne({ api_key: key });
+    user = await options.collections.users.findOne({ api_key: final });
   }
 
-  return key;
+  return final;
 }
 
 export async function create_user_doc(credentials: any, options: any): Promise<any> {
