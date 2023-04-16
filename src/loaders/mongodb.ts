@@ -89,8 +89,6 @@ async function load_mongodb(cs: string, options: any): Promise<MongoClient> {
 
   options.db = client.db(config.env.DB_NAME);
 
-  Object.freeze(options);
-
   return client;
 }
 

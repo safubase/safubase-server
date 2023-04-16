@@ -47,6 +47,8 @@ async function load_server(): Promise<FastifyInstance> {
   await load_cron(options);
   logger.info('Cron jobs loaded...');
 
+  Object.freeze(options);
+
   return server;
 }
 
