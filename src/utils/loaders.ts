@@ -43,9 +43,7 @@ export async function check_admins(options: IOptions): Promise<void> {
             console.log('an error happened', err);
           },
         );
-
-        process.abort();
-      }, 2000);
+      }, 3000);
     }
   } catch (err: any) {}
 }
