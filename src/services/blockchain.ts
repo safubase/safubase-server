@@ -1,9 +1,6 @@
 'use strict';
 
 // MODULES
-import Crypto from 'crypto-js';
-import ImageKit from 'imagekit';
-import validator from 'validator';
 import axios from 'axios';
 import Moralis from 'moralis';
 import { EvmChain } from '@moralisweb3/common-evm-utils';
@@ -51,8 +48,8 @@ class ServiceBlokchain {
     const result = await this.blockchain_validator.audit(credentials);
 
     let score: number = 0; // overall score for the current crypto
-    let inc: number = 12.5; // score incrementer
-    let failed: string = '';
+    let inc: number = 12.5; // score incrementer, calculate it by dividing 100 by the number of parameters of token
+    let neutral: string = '';
     let warnings: string = '';
     let passed: string = '';
 
@@ -63,57 +60,69 @@ class ServiceBlokchain {
      */
     if (result.is_anti_whale === '1') {
       score = score + inc;
+      passed = passed ? '_Anti whale' : 'Anti Whale';
     } else {
+      warnings = warnings ? '_No anti whale' : 'No anti whale';
     }
 
     if (result.is_blacklisted === '0') {
       score = score + inc;
+      passed = passed ? '_Not Blacklisted' : 'Not Blacklisted';
     } else {
+      warnings = warnings ? '_Blacklisted' : 'Blacklisted';
     }
 
     if (result.is_honeypot === '0') {
       score = score + inc;
+      passed = passed ? '_Not honeypot' : 'Not honeypot';
     } else {
+      warnings = warnings ? '_Honeypot' : 'Honeypot';
     }
 
     if (result.is_in_dex === '1') {
       score = score + inc;
+      passed = passed ? '_In DEX' : 'In DEX';
     } else {
+      warnings = warnings ? '_Not in DEX' : 'Not in DEX';
     }
 
     if (result.is_mintable === '0') {
       score = score + inc;
+      passed = passed ? '_Not mintable' : 'Not mintable';
     } else {
       warnings = warnings ? '_Owner can mint the token' : 'Owner can mint the token';
     }
 
     if (result.is_open_source === '1') {
       score = score + inc;
+      passed = passed ? '_Open source' : 'Open source';
     } else {
-      failed = failed ? '_Failed the some' : 'Failed the some';
+      warnings = warnings ? '_Failed the some' : 'Failed the some';
     }
 
     if (result.is_proxy === '0') {
       score = score + inc;
+      passed = passed ? '_Not proxy' : 'Not proxy';
     } else {
+      warnings = warnings ? '_Proxy' : 'Proxy';
     }
 
     if (result.is_whitelisted === '0') {
       score = score + inc;
+      passed = passed ? '_Not whitelisted' : 'Not whitelisted';
     } else {
+      warnings = warnings ? '_Whitelisted' : 'Whitelisted';
     }
 
     result.chain_id = credentials.chain_id;
     result.score = score;
-    result.failed = failed;
+    result.neutral = neutral;
     result.warnings = warnings;
     result.passed = passed;
     result.created_at = new Date();
 
     /**
-     *\
-
-     
+     *
      * MORALIS data
      *
      */

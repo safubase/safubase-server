@@ -162,6 +162,7 @@ class AuthService {
     }
 
     const sid: string = await UTILS_SERVICES.create_session({ user_id: user._id, ip: credentials.ip }, this.options);
+
     const profile = {
       _id: user._id,
       email: user.email,

@@ -18,19 +18,16 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
   const server: FastifyInstance = Fastify({
     maxParamLength: 256, // url param length
     trustProxy: true, // for NGINX
-    bodyLimit: 2097152, // no data more than 2mb is allowed in one req
+    bodyLimit: 2097152, // no data more than 2mb is allowed in one request
   });
 
   // fastify middleware plugin registrations
-
   if (config.env.NODE_ENV === 'production') {
     await server.register(fastify_cors, {
       origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI],
       credentials: true,
     });
-  }
-
-  if (config.env.NODE_ENV === 'development') {
+  } else if (config.env.NODE_ENV === 'development') {
     await server.register(fastify_cors, {
       origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, 'http://localhost:3000'],
       credentials: true,
