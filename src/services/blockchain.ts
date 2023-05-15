@@ -38,8 +38,11 @@ class ServiceBlokchain {
   async get_upcoming_unlocks(credentials: any) {
     await this.blockchain_validator.get_upcoming_unlocks(credentials);
 
-    const url = 'https://dexcheck.io/unlocks/token_locks_combined?page=1';
+    //const url = 'https://dexcheck.io/unlocks/token_locks_combined?page=1';
+    const url = 'https://token.unlocks.app';
     const res = await axios.get(url);
+
+    console.log(res.data);
 
     return res.data;
   }
