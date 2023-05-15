@@ -38,7 +38,6 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
    */
 
   await server.register(fastify_cors, {
-    origin: '*',
     credentials: true,
   });
 
