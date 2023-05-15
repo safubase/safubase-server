@@ -22,24 +22,17 @@ async function load_fastify(options: any): Promise<FastifyInstance> {
   });
 
   // fastify middleware plugin registrations
-  /**
-   *   if (config.env.NODE_ENV === 'production') {
+  if (config.env.NODE_ENV === 'production') {
     await server.register(fastify_cors, {
-      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI],
+      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, '*'],
       credentials: true,
     });
   } else if (config.env.NODE_ENV === 'development') {
     await server.register(fastify_cors, {
-      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, 'http://localhost:3000'],
+      origin: ['https://' + config.env.URL_UI, 'https://admin.' + config.env.URL_UI, 'http://localhost:3000', '*'],
       credentials: true,
     });
   }
-   * 
-   */
-
-  await server.register(fastify_cors, {
-    credentials: true,
-  });
 
   await server.register(fastify_helmet);
   await server.register(fastify_cookie, { secret: config.env.SESSION_SECRET, parseOptions: {} });
