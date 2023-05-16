@@ -93,7 +93,7 @@ class ServiceBlokchain {
 
       // ================== p content ===========================
 
-      if (res.data[i] === '<' && res.data[i + 1] === 'p' && res.data[i + 2] === ' ') {
+      if (res.data[i] === '<' && res.data[i + 1] === 'p' && res.data[i + 2] === ' ' && p_count < 6) {
         p_start = true;
       }
 
@@ -103,19 +103,26 @@ class ServiceBlokchain {
         }
 
         if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 'p') {
-          p_content_start = false;
           p_start = false;
+          p_content_start = false;
           p_count++;
         }
 
         if (p_content_start) {
-          switch (p_count) {
-            case 0:
-              token.name = token.name + res.data[i];
-              break;
+          if (p_count === 0) {
+            token.name = token.name + res.data[i];
+          }
+
+          if (p_count === 1) {
+            token.usd_price = token.usd_price + res.data[i];
+          }
+
+          /**
+           *           switch (p_count) {
+
 
             case 1:
-              token.usd_price = token.usd_price + res.data[i];
+
               break;
 
             case 2:
@@ -134,12 +141,14 @@ class ServiceBlokchain {
               token.circulating_supply = token.circulating_supply + res.data[i];
               break;
           }
+           * 
+           */
         }
       }
 
       // ==================== span content for symbol =========================
 
-      if (res.data[i] === '<' && res.data[i + 1] === 's' && res.data[i + 2] === 'p' && res.data[i + 3] === 'a' && res.data[i + 4] === 'n') {
+      if (res.data[i] === '<' && res.data[i + 1] === 's' && res.data[i + 2] === 'p' && res.data[i + 3] === 'a' && res.data[i + 4] === 'n' && !token.symbol) {
         span_start = true;
       }
 
@@ -182,7 +191,7 @@ class ServiceBlokchain {
       }
     }
 
-    for (let i: number = 0; i < tokens.length; i++) {
+    for (let i: number = 0; i < 15; i++) {
       console.log(tokens[i]);
     }
 
