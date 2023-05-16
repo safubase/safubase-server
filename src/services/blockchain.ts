@@ -87,7 +87,8 @@ class ServiceBlokchain {
 
       // end tr
       if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 't' && res.data[i + 3] === 'r') {
-        tokens.push(token);
+        tokens.push({ ...token });
+
         token.icon = '';
 
         img_start = false;
