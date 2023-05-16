@@ -41,8 +41,70 @@ class ServiceBlokchain {
     //const url = 'https://dexcheck.io/unlocks/token_locks_combined?page=1';
     const url = 'https://token.unlocks.app';
     const res = await axios.get(url);
+    const tokens = [];
 
-    console.log(res.data);
+    let tbody_start: boolean = false;
+    let img_start: boolean = false;
+    let img_src_start: boolean = false;
+    let name_start: boolean = false;
+    let symbol_start: boolean = false;
+
+    const token: any = {
+      icon: '',
+    };
+
+    for (let i: number = 0; i < res.data.length; i++) {
+      // tbody start
+      if (res.data[i] === '<' && res.data[i + 1] === 't' && res.data[i + 2] === 'b' && res.data[i + 3] === 'o' && res.data[i + 4] === 'd') {
+        tbody_start = true;
+      }
+
+      if (!tbody_start) {
+        continue;
+      }
+
+      if (res.data[i] === '<' && res.data[i + 1] === 'i' && res.data[i + 2] === 'm' && res.data[i + 3] === 'g') {
+        img_start = true;
+      }
+
+      if (img_start) {
+        if (res.data[i] === 's' && res.data[i - 2] === 'r' && res.data[i - 2] === 'c' && res.data[i - 1] === '"') {
+          img_src_start = true;
+        }
+
+        if (img_src_start) {
+          token.icon = token.icon + res.data[i];
+
+          if (res.data[i] === '"') {
+            img_src_start = false;
+          }
+        }
+
+        if (res.data[i] === '>') {
+          img_start = false;
+        }
+      }
+
+      // end tr
+      if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 't' && res.data[i + 3] === 'r') {
+        tokens.push(token);
+        token.icon = '';
+
+        img_start = false;
+        img_src_start = false;
+        name_start = false;
+        symbol_start = false;
+      }
+
+      // tbody end
+      if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 't' && res.data[i + 3] === 'b' && res.data[i + 4] === 'o' && res.data[i + 5] === 'd') {
+        break;
+      }
+    }
+
+    for (let i: number = 0; i < tokens.length; i++) {
+      console.log(tokens[i]);
+    }
 
     return res.data;
   }
