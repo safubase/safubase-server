@@ -158,6 +158,7 @@ class ServiceBlokchain {
         }
 
         if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 's' && res.data[i + 3] === 'p' && res.data[i + 4] === 'a') {
+          span_start = false;
           span_content_start = false;
         }
 
