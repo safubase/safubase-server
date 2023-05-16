@@ -51,7 +51,7 @@ class ServiceBlokchain {
     let p_start: boolean = false;
     let span_start: boolean = false;
 
-    const token: any = {
+    let token: any = {
       icon: '',
     };
 
@@ -98,21 +98,17 @@ class ServiceBlokchain {
       if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 'p') {
         p_start = false;
         p_count++;
+
+        token.name = token.name + '____';
       }
 
       if (p_start) {
-        if (p_count === 0) {
-          token.name = token.name + res.data[i];
-        }
-
-        if (p_count === 1) {
-          token.usd_price = token.usd_price + res.data[i];
-        }
+        token.name = token.name + res.data[i];
       }
 
       // ==================== span content for symbol =========================
 
-      if (res.data[i] === '<' && res.data[i + 1] === 's' && res.data[i + 2] === 'p' && res.data[i + 3] === 'a' && res.data[i + 4] === 'n' && !token.symbol) {
+      if (res.data[i] === '<' && res.data[i + 1] === 's' && res.data[i + 2] === 'p' && res.data[i + 3] === 'a' && res.data[i + 4] === 'n') {
         span_start = true;
       }
 
@@ -123,6 +119,7 @@ class ServiceBlokchain {
       if (span_start) {
         token.symbol = token.symbol + res.data[i];
       }
+
       // =============================================
 
       // end tr
@@ -132,6 +129,7 @@ class ServiceBlokchain {
         token.icon = '';
         token.name = '';
         token.symbol = '';
+        token = {};
 
         img_start = false;
         img_src_start = false;
