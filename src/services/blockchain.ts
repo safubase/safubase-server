@@ -63,12 +63,13 @@ class ServiceBlokchain {
         continue;
       }
 
-      if (res.data[i] === '<' && res.data[i + 1] === 'i' && res.data[i + 2] === 'm' && res.data[i + 3] === 'g') {
+      if (res.data[i] === '<' && res.data[i + 1] === 'i' && res.data[i + 2] === 'm' && res.data[i + 3] === 'g' && !token.icon) {
         img_start = true;
+        console.log('img passed');
       }
 
       if (img_start) {
-        if (res.data[i - 4] === 's' && res.data[i - 3] === 'r' && res.data[i - 2] === 'c' && res.data[i - 1] === '"') {
+        if (res.data[i - 5] === 's' && res.data[i - 4] === 'r' && res.data[i - 3] === 'c' && res.data[i - 2] === '=' && res.data[i - 1] === '"') {
           img_src_start = true;
         }
 
