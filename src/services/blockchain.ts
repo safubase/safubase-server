@@ -68,7 +68,7 @@ class ServiceBlokchain {
       }
 
       if (img_start) {
-        if (res.data[i] === 's' && res.data[i - 2] === 'r' && res.data[i - 2] === 'c' && res.data[i - 1] === '"') {
+        if (res.data[i - 4] === 's' && res.data[i - 3] === 'r' && res.data[i - 2] === 'c' && res.data[i - 1] === '"') {
           img_src_start = true;
         }
 
@@ -105,6 +105,8 @@ class ServiceBlokchain {
     for (let i: number = 0; i < tokens.length; i++) {
       console.log(tokens[i]);
     }
+
+    console.log(tokens.length);
 
     return res.data;
   }
