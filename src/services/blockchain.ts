@@ -46,8 +46,12 @@ class ServiceBlokchain {
     let tbody_start: boolean = false;
     let img_start: boolean = false;
     let img_src_start: boolean = false;
-    let name_start: boolean = false;
-    let symbol_start: boolean = false;
+
+    let p_count: number = 0;
+    let p_start: boolean = false;
+    let p_content_start: boolean = false;
+    let span_start: boolean = false;
+    let span_content_start: boolean = false;
 
     const token: any = {
       icon: '',
@@ -63,9 +67,10 @@ class ServiceBlokchain {
         continue;
       }
 
+      // =============================================
+
       if (res.data[i] === '<' && res.data[i + 1] === 'i' && res.data[i + 2] === 'm' && res.data[i + 3] === 'g' && !token.icon) {
         img_start = true;
-        console.log('img passed');
       }
 
       if (img_start) {
@@ -73,12 +78,12 @@ class ServiceBlokchain {
           img_src_start = true;
         }
 
+        if (res.data[i] === '"') {
+          img_src_start = false;
+        }
+
         if (img_src_start) {
           token.icon = token.icon + res.data[i];
-
-          if (res.data[i] === '"') {
-            img_src_start = false;
-          }
         }
 
         if (res.data[i] === '>') {
@@ -86,16 +91,89 @@ class ServiceBlokchain {
         }
       }
 
+      // ================== p content ===========================
+
+      if (res.data[i] === '<' && res.data[i + 1] === 'p' && res.data[i + 2] === ' ') {
+        p_start = true;
+      }
+
+      if (p_start) {
+        if (res.data[i - 1] === '>') {
+          p_content_start = true;
+        }
+
+        if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 'p') {
+          p_content_start = false;
+          p_start = false;
+          p_count++;
+        }
+
+        if (p_content_start) {
+          switch (p_count) {
+            case 0:
+              token.name = token.name + res.data[i];
+              break;
+
+            case 1:
+              token.usd_price = token.usd_price + res.data[i];
+              break;
+
+            case 2:
+              token.fdmc = token.fdmc + res.data[i];
+              break;
+
+            case 3:
+              token.max_supply = token.max_supply + res.data[i];
+              break;
+
+            case 4:
+              token.market_cap = token.market_cap + res.data[i];
+              break;
+
+            case 5:
+              token.circulating_supply = token.circulating_supply + res.data[i];
+              break;
+          }
+        }
+      }
+
+      // ==================== span content for symbol =========================
+
+      if (res.data[i] === '<' && res.data[i + 1] === 's' && res.data[i + 2] === 'p' && res.data[i + 3] === 'a' && res.data[i + 4] === 'n') {
+        span_start = true;
+      }
+
+      if (span_start) {
+        if (res.data[i - 1] === '>') {
+          span_content_start = true;
+        }
+
+        if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 's' && res.data[i + 3] === 'p' && res.data[i + 4] === 'a') {
+          span_content_start = false;
+        }
+
+        if (span_content_start) {
+          token.symbol = token.symbol + res.data[i];
+        }
+      }
+      // =============================================
+
       // end tr
       if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 't' && res.data[i + 3] === 'r') {
         tokens.push({ ...token });
 
         token.icon = '';
+        token.name = '';
+        token.symbol = '';
 
         img_start = false;
         img_src_start = false;
-        name_start = false;
-        symbol_start = false;
+
+        p_start = false;
+        p_content_start = false;
+
+        span_start = false;
+        span_content_start = false;
       }
 
       // tbody end
@@ -107,8 +185,6 @@ class ServiceBlokchain {
     for (let i: number = 0; i < tokens.length; i++) {
       console.log(tokens[i]);
     }
-
-    console.log(tokens.length);
 
     return res.data;
   }
