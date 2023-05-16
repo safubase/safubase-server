@@ -53,6 +53,8 @@ class ServiceBlokchain {
 
     let token: any = {
       icon: '',
+      symbol: '',
+      credentials: '',
     };
 
     for (let i: number = 0; i < res.data.length; i++) {
@@ -127,8 +129,9 @@ class ServiceBlokchain {
         tokens.push({ ...token });
 
         token.icon = '';
-        token.name = '';
+        token.credentials = '';
         token.symbol = '';
+
         token = {};
 
         img_start = false;
