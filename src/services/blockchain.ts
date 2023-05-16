@@ -101,11 +101,11 @@ class ServiceBlokchain {
         p_start = false;
         p_count++;
 
-        token.name = token.name + '____';
+        token.credentials = token.credentials + '____';
       }
 
       if (p_start) {
-        token.name = token.name + res.data[i];
+        token.credentials = token.credentials + res.data[i];
       }
 
       // ==================== span content for symbol =========================
@@ -131,8 +131,6 @@ class ServiceBlokchain {
         token.icon = '';
         token.credentials = '';
         token.symbol = '';
-
-        token = {};
 
         img_start = false;
         img_src_start = false;
