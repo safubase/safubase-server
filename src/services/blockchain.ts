@@ -49,9 +49,7 @@ class ServiceBlokchain {
 
     let p_count: number = 0;
     let p_start: boolean = false;
-    let p_content_start: boolean = false;
     let span_start: boolean = false;
-    let span_content_start: boolean = false;
 
     const token: any = {
       icon: '',
@@ -93,56 +91,30 @@ class ServiceBlokchain {
 
       // ================== p content ===========================
 
-      if (res.data[i] === '<' && res.data[i + 1] === 'p' && res.data[i + 2] === ' ' && p_count < 6) {
+      if (res.data[i] === '<' && res.data[i + 1] === 'p' && res.data[i + 2] === ' ') {
         p_start = true;
       }
 
+      if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 'p') {
+        p_start = false;
+        p_count++;
+      }
+
       if (p_start) {
-        if (res.data[i - 1] === '>') {
-          p_content_start = true;
+        if (p_count === 0) {
+          token.name = token.name + res.data[i];
         }
 
-        if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 'p') {
-          p_start = false;
-          p_content_start = false;
-          p_count++;
+        if (p_count === 1) {
+          token.usd_price = token.usd_price + res.data[i];
         }
 
-        if (p_content_start) {
-          if (p_count === 0) {
-            token.name = token.name + res.data[i];
-          }
+        if (p_count === 2) {
+          token.asdf = token.asdf + res.data[i];
+        }
 
-          if (p_count === 1) {
-            token.usd_price = token.usd_price + res.data[i];
-          }
-
-          /**
-           *           switch (p_count) {
-
-
-            case 1:
-
-              break;
-
-            case 2:
-              token.fdmc = token.fdmc + res.data[i];
-              break;
-
-            case 3:
-              token.max_supply = token.max_supply + res.data[i];
-              break;
-
-            case 4:
-              token.market_cap = token.market_cap + res.data[i];
-              break;
-
-            case 5:
-              token.circulating_supply = token.circulating_supply + res.data[i];
-              break;
-          }
-           * 
-           */
+        if (p_count === 3) {
+          token.asdf = token.asdf + res.data[i];
         }
       }
 
@@ -152,19 +124,12 @@ class ServiceBlokchain {
         span_start = true;
       }
 
+      if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 's' && res.data[i + 3] === 'p' && res.data[i + 4] === 'a') {
+        span_start = false;
+      }
+
       if (span_start) {
-        if (res.data[i - 1] === '>') {
-          span_content_start = true;
-        }
-
-        if (res.data[i] === '<' && res.data[i + 1] === '/' && res.data[i + 2] === 's' && res.data[i + 3] === 'p' && res.data[i + 4] === 'a') {
-          span_start = false;
-          span_content_start = false;
-        }
-
-        if (span_content_start) {
-          token.symbol = token.symbol + res.data[i];
-        }
+        token.symbol = token.symbol + res.data[i];
       }
       // =============================================
 
@@ -180,10 +145,8 @@ class ServiceBlokchain {
         img_src_start = false;
 
         p_start = false;
-        p_content_start = false;
 
         span_start = false;
-        span_content_start = false;
       }
 
       // tbody end
@@ -196,7 +159,7 @@ class ServiceBlokchain {
       console.log(tokens[i]);
     }
 
-    return res.data;
+    return tokens;
   }
 
   async audit(credentials: any): Promise<void> {
