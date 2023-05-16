@@ -108,14 +108,6 @@ class ServiceBlokchain {
         if (p_count === 1) {
           token.usd_price = token.usd_price + res.data[i];
         }
-
-        if (p_count === 2) {
-          token.asdf = token.asdf + res.data[i];
-        }
-
-        if (p_count === 3) {
-          token.asdf = token.asdf + res.data[i];
-        }
       }
 
       // ==================== span content for symbol =========================
