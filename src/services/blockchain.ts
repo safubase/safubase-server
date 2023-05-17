@@ -28,11 +28,17 @@ class ServiceBlokchain {
   async get_whales(credentials: any) {
     await this.blockchain_validator.get_whales(credentials);
 
-    const api_match: any = { avalanche: 'avax', fantom: 'ftm', arbitrum: 'arb', polygon: 'poly', bsc: 'bsc', eth: 'eth' };
+    /**
+ *     const api_match: any = { avalanche: 'avax', fantom: 'ftm', arbitrum: 'arb', polygon: 'poly', bsc: 'bsc', eth: 'eth' };
     const url = 'https://dexcheck.io/' + api_match[credentials.chain.toLowerCase()] + '-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
     const res = await axios.get(url);
+ * 
+ */
 
-    return res.data.trs;
+    const url = 'https://api.clankapp.com/v2/explorer/tx?api_key=58a8ac3d1d023b6cfd65b7aba4e30de9';
+    const res = await axios.get(url);
+
+    return res.data.data;
   }
 
   async get_upcoming_unlocks(credentials: any) {
