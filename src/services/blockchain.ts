@@ -150,10 +150,6 @@ class ServiceBlokchain {
       }
     }
 
-    for (let i: number = 0; i < 15; i++) {
-      console.log(tokens[i]);
-    }
-
     return tokens;
   }
 
