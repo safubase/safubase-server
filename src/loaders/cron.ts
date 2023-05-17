@@ -21,6 +21,8 @@ async function load_cron(options: any): Promise<void> {
   // Every minute
   new CronJob('59 * * * * *', function () {
     //UTILS_LOADERS.check_admins(options);
+
+    UTILS_LOADERS.update_whales(options);
   }).start();
 
   // Every midnight

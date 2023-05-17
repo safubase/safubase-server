@@ -34,11 +34,14 @@ class ServiceBlokchain {
     const res = await axios.get(url);
  * 
  */
+    const whales_arr = [];
+    const whales = await this.options.redis.hGetAll('blockchain_whales');
 
-    const url = 'https://api.clankapp.com/v2/explorer/tx?api_key=58a8ac3d1d023b6cfd65b7aba4e30de9';
-    const res = await axios.get(url);
+    for (const key in whales) {
+      whales_arr.push(JSON.parse(whales[key]));
+    }
 
-    return res.data.data;
+    return whales_arr;
   }
 
   async get_upcoming_unlocks(credentials: any) {

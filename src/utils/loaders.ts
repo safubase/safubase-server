@@ -2,6 +2,7 @@
 
 // MODULES
 import ImageKit from 'imagekit';
+import axios from 'axios';
 
 // INTERFACES
 import { Document } from 'mongodb';
@@ -89,8 +90,19 @@ export async function clear_sessions(options: IOptions): Promise<void> {
   }
 }
 
+export async function update_whales(options: IOptions): Promise<void> {
+  const url = 'https://api.clankapp.com/v2/explorer/tx?api_key=58a8ac3d1d023b6cfd65b7aba4e30de9';
+  const res = await axios.get(url);
+  const data = res.data.data;
+
+  for (let i: number = 0; i < data.length; i++) {
+    options.redis.hSet('blockchain_whales', i.toString(), JSON.stringify(data[i]));
+  }
+}
+
 export default {
   check_admins,
   clear_imagekit,
   clear_sessions,
+  update_whales,
 };
