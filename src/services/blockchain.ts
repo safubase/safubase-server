@@ -32,10 +32,6 @@ class ServiceBlokchain {
     const url = 'https://dexcheck.io/' + api_match[credentials.chain.toLowerCase()] + '-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
     const res = await axios.get(url);
 
-    const test_res = await axios.get('https://api.whale-alert.io/v1/transactions');
-
-    console.log(test_res.data);
-
     return res.data.trs;
   }
 
