@@ -28,17 +28,26 @@ class ServiceBlokchain {
   async get_whales(credentials: any) {
     await this.blockchain_validator.get_whales(credentials);
 
-    /**
- *     const api_match: any = { avalanche: 'avax', fantom: 'ftm', arbitrum: 'arb', polygon: 'poly', bsc: 'bsc', eth: 'eth' };
-    const url = 'https://dexcheck.io/' + api_match[credentials.chain.toLowerCase()] + '-api/whale_watcher?amount_min=10000&chain=' + credentials.chain.toLowerCase() + '&exclude_stable=true&size=20&exclude_bots=0&page=1';
-    const res = await axios.get(url);
- * 
- */
     const whales_arr = [];
-    const whales = await this.options.redis.hGetAll('blockchain_whales_' + credentials.chain);
+    let whales: any = [];
 
-    for (const key in whales) {
-      whales_arr.push(JSON.parse(whales[key]));
+    if (credentials.chain === 'all') {
+      const whales_bnb = await this.options.redis.hGetAll('blockchain_whales_binancechain');
+      const whales_eth = await this.options.redis.hGetAll('blockchain_whales_ethereum');
+
+      for (const key in whales_bnb) {
+        whales_arr.push(JSON.parse(whales_bnb[key]));
+      }
+
+      for (const key in whales_eth) {
+        whales_arr.push(JSON.parse(whales_eth[key]));
+      }
+    } else {
+      whales = await this.options.redis.hGetAll('blockchain_whales_' + credentials.chain);
+
+      for (const key in whales) {
+        whales_arr.push(JSON.parse(whales[key]));
+      }
     }
 
     return whales_arr;
