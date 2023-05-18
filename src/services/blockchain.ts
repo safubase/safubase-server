@@ -32,8 +32,11 @@ class ServiceBlokchain {
     let whales: any = [];
 
     if (credentials.chain === 'all') {
-      const whales_bnb = await this.options.redis.hGetAll('blockchain_whales_binancechain');
-      const whales_eth = await this.options.redis.hGetAll('blockchain_whales_ethereum');
+      const res = await Promise.all([this.options.redis.hGetAll('blockchain_whales_binancechain'), this.options.redis.hGetAll('blockchain_whales_ethereum'), this.options.redis.hGetAll('blockchain_whales_bitcoin')]);
+
+      const whales_bnb = res[0];
+      const whales_eth = res[1];
+      const whales_btc = res[2];
 
       for (const key in whales_bnb) {
         whales_arr.push(JSON.parse(whales_bnb[key]));
@@ -41,6 +44,10 @@ class ServiceBlokchain {
 
       for (const key in whales_eth) {
         whales_arr.push(JSON.parse(whales_eth[key]));
+      }
+
+      for (const key in whales_btc) {
+        whales_arr.push(JSON.parse(whales_btc[key]));
       }
     } else {
       whales = await this.options.redis.hGetAll('blockchain_whales_' + credentials.chain);

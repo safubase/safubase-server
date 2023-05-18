@@ -93,12 +93,15 @@ export async function clear_sessions(options: IOptions): Promise<void> {
 export async function update_whales(options: IOptions): Promise<void> {
   const url_bsc = 'https://api.clankapp.com/v2/explorer/tx?s_date=desc&t_blockchain=binancechain&size=15&api_token=9f72e2bd5cad61ee88566038739b98bc&api_key=58a8ac3d1d023b6cfd65b7aba4e30de9';
   const url_eth = 'https://api.clankapp.com/v2/explorer/tx?s_date=desc&t_blockchain=ethereum&size=15&api_token=9f72e2bd5cad61ee88566038739b98bc&api_key=58a8ac3d1d023b6cfd65b7aba4e30de9';
+  const url_btc = 'https://api.clankapp.com/v2/explorer/tx?s_date=desc&t_blockchain=bitcoin&size=15&api_token=9f72e2bd5cad61ee88566038739b98bc&api_key=58a8ac3d1d023b6cfd65b7aba4e30de9';
 
   const res_bsc = await axios.get(url_bsc);
   const res_eth = await axios.get(url_eth);
+  const res_btc = await axios.get(url_btc);
 
   const data_bsc = res_bsc.data.data;
   const data_eth = res_eth.data.data;
+  const data_btc = res_btc.data.data;
 
   for (let i: number = 0; i < data_bsc.length; i++) {
     options.redis.hSet('blockchain_whales_binancechain', i.toString(), JSON.stringify(data_bsc[i]));
@@ -106,6 +109,10 @@ export async function update_whales(options: IOptions): Promise<void> {
 
   for (let i: number = 0; i < data_eth.length; i++) {
     options.redis.hSet('blockchain_whales_ethereum', i.toString(), JSON.stringify(data_eth[i]));
+  }
+
+  for (let i: number = 0; i < data_btc.length; i++) {
+    options.redis.hSet('blockchain_whales_bitcoin', i.toString(), JSON.stringify(data_btc[i]));
   }
 }
 
