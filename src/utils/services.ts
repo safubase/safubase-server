@@ -817,7 +817,7 @@ export class BlockchainValidator {
       throw { message: 'Chain id or address might be insufficient', type: `${err.section}:${err.type}` };
     }
 
-    if (!res.data.token_name) {
+    if (!res.data.result[credentials.address.toLowerCase()].token_name) {
       throw { message: 'Chain id or address might be insufficient', type: `${err.section}:${err.type}` };
     }
 
