@@ -233,14 +233,13 @@ class ServiceBlokchain {
     result.neutral = neutral;
     result.warnings = warnings;
     result.passed = passed;
-    result.created_at = new Date();
 
     /**
      *
      * MORALIS data
      *
      */
-    const chains: any = { '56': EvmChain.BSC, '1': EvmChain.ETHEREUM };
+    const chains: any = { '56': EvmChain.BSC, '1': EvmChain.ETHEREUM, '137': EvmChain.POLYGON, '43114': EvmChain.AVALANCHE, '250': EvmChain.FANTOM };
     const api_res_moralis = await Moralis.EvmApi.token.getTokenMetadata({
       addresses: [credentials.address],
       chain: chains[credentials.chain_id],
@@ -253,6 +252,7 @@ class ServiceBlokchain {
     }
 
     // Override the moralis created_at
+
     result.created_at = new Date();
 
     /**
