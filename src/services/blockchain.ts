@@ -35,7 +35,7 @@ class ServiceBlokchain {
  * 
  */
     const whales_arr = [];
-    const whales = await this.options.redis.hGetAll('blockchain_whales');
+    const whales = await this.options.redis.hGetAll('blockchain_whales_' + credentials.chain);
 
     for (const key in whales) {
       whales_arr.push(JSON.parse(whales[key]));
