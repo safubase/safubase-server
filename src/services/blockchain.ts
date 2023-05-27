@@ -179,7 +179,7 @@ class ServiceBlokchain {
 
     let score: number = 0; // overall score for the current crypto
     let inc: number = 12.5; // score incrementer, calculate it by dividing 100 by the number of parameters of token
-    let neutral: string = '';
+    let neutral: string = result.address + '_' + result.buy_tax + '_' + result.sell_tax;
     let warnings: string = '';
     let passed: string = '';
 
