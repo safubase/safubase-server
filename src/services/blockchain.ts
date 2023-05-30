@@ -211,9 +211,10 @@ class ServiceBlokchain {
 
     if (result.is_in_dex === '1') {
       score = score + inc;
-      passed = passed ? passed + '_In DEX' : 'In DEX';
+      //passed = passed ? passed + '_In DEX' : 'In DEX';
+      neutral = neutral + '_In DEX';
     } else {
-      warnings = warnings ? warnings + '_Not in DEX' : 'Not in DEX';
+      //warnings = warnings ? warnings + '_Not in DEX' : 'Not in DEX';
     }
 
     if (result.is_mintable === '0') {
